@@ -1,0 +1,9 @@
+package sdk
+
+const (
+	COMMANDID_PING     = 0
+	COMMANDID_ERROR    = 1
+	COMMANDID_GET_MAC  = 2
+	COMMANDID_LOGIN    = 16
+	COMMANDID_GET_NAME = 38
+)
