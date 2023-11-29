@@ -31,20 +31,19 @@ func (p *TransmissionContainer) GetLength() (int, error) {
 }
 
 func (p *TransmissionContainer) Encode() ([]byte, error) {
+	data, err := p.encodeToHexOrNot(true)
+	return data, err
+}
+
+func (p *TransmissionContainer) encodeToHexOrNot(encodeIntoHex bool) ([]byte, error) {
 	buffer := new(bytes.Buffer)
 
-	bodyBytes, err := p.Packet.Encode()
+	bodyHex, err := p.Packet.EncodeToHexString()
 	if err != nil {
 		return buffer.Bytes(), fmt.Errorf("%v", err)
 	}
 
-	// Must be a byte!
-	// +2 byte because the 2 bytes of this payloadLength field are also counted in.
-	// I could add that field to the payload struct but receiving would be more complex than, so I won't do so.
-	//p.PayloadLength = uint16(len(bodyBytes) + 2)
-	preSize := uint16(binary.Size(p.TransmissionContainerPre))
-	postSize := uint16(binary.Size(p.TransmissionContainerPost))
-	p.BodyLength = uint16(len(bodyBytes)) + preSize + postSize - 13
+	p.BodyLength = uint16(p.Packet.GetLength())
 
 	// Calculate checksum
 	p.Checksum, err = p.getChecksum()
@@ -52,23 +51,34 @@ func (p *TransmissionContainer) Encode() ([]byte, error) {
 		return []byte{}, fmt.Errorf("failed to calculage packet checksum. %v", err)
 	}
 
-	err = binary.Write(buffer, binary.BigEndian, p.TransmissionContainerPre)
+	tmpBuff := new(bytes.Buffer)
+	err = binary.Write(tmpBuff, binary.BigEndian, p.TransmissionContainerPre)
+	if err != nil {
+		return []byte{}, fmt.Errorf("%v", err)
+	}
+	if encodeIntoHex {
+		buffer.Write([]byte(hex.EncodeToString(tmpBuff.Bytes())))
+	} else {
+		buffer.Write(tmpBuff.Bytes())
+	}
+
+	err = binary.Write(buffer, binary.BigEndian, []byte(bodyHex))
 	if err != nil {
 		return buffer.Bytes(), fmt.Errorf("%v", err)
 	}
 
-	err = binary.Write(buffer, binary.BigEndian, bodyBytes)
+	tmpBuff = new(bytes.Buffer)
+	err = binary.Write(tmpBuff, binary.BigEndian, p.TransmissionContainerPost)
 	if err != nil {
-		return buffer.Bytes(), fmt.Errorf("%v", err)
+		return []byte{}, fmt.Errorf("%v", err)
+	}
+	if encodeIntoHex {
+		buffer.Write([]byte(hex.EncodeToString(tmpBuff.Bytes())))
+	} else {
+		buffer.Write(tmpBuff.Bytes())
 	}
 
-	err = binary.Write(buffer, binary.BigEndian, p.TransmissionContainerPost)
-	if err != nil {
-		return buffer.Bytes(), fmt.Errorf("%v", err)
-	}
-
-	str := hex.EncodeToString(buffer.Bytes())
-	return []byte(str), nil
+	return buffer.Bytes(), nil
 }
 
 func (p *TransmissionContainer) GetSrcMacToHexString() string {

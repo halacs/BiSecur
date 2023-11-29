@@ -11,7 +11,8 @@ type Login struct {
 }
 
 func (l *Login) Encode() []byte {
-	return getHormanEncodedUsernamePassword(l.username, l.password)
+	data := getHormanEncodedUsernamePassword(l.username, l.password)
+	return data
 }
 
 func LoginPayload(username, password string) PayloadInterface {

@@ -33,11 +33,6 @@ func (p *PacketPost) getSize() int {
 	return binary.Size(p)
 }
 
-func (p *Packet) EncodeToHexString() (string, error) {
-	byteData, err := p.Encode()
-	return strings.ToUpper(hex.EncodeToString(byteData)), err
-}
-
 func DecodePacket(packetLength uint16, buffer *bytes.Buffer) (*Packet, error) {
 	p := Packet{}
 
@@ -63,7 +58,17 @@ func DecodePacket(packetLength uint16, buffer *bytes.Buffer) (*Packet, error) {
 	return &p, nil
 }
 
+func (p *Packet) EncodeToHexString() (string, error) {
+	byteData, err := p.encodeIntoHexOrNot(true)
+	return strings.ToUpper(string(byteData)), err
+}
+
 func (p *Packet) Encode() ([]byte, error) {
+	byteData, err := p.encodeIntoHexOrNot(false)
+	return byteData, err
+}
+
+func (p *Packet) encodeIntoHexOrNot(encodeIntoHex bool) ([]byte, error) {
 	var err error
 	p.Checksum, err = p.getChecksum()
 	if err != nil {
@@ -72,25 +77,32 @@ func (p *Packet) Encode() ([]byte, error) {
 
 	buffer := new(bytes.Buffer)
 
-	err = binary.Write(buffer, binary.BigEndian, p.PacketPre)
+	tmpBuff := new(bytes.Buffer)
+	err = binary.Write(tmpBuff, binary.BigEndian, p.PacketPre)
 	if err != nil {
 		return []byte{}, fmt.Errorf("%v", err)
 	}
-
-	payloadBytes := p.payload.Encode()
-	payloadBytes, err = hex.DecodeString(string(payloadBytes)) // workaround to avoid hex encoding once more (take care with the first NOT coded byte!!!)
-	if err != nil {
-		panic("this should never happen") // TODO eliminate hex.DecodeString here somehow. It cause panic when calculating checksum on a received packet payload
+	if encodeIntoHex {
+		buffer.Write([]byte(hex.EncodeToString(tmpBuff.Bytes())))
+	} else {
+		buffer.Write(tmpBuff.Bytes())
 	}
 
+	payloadBytes := p.payload.Encode()
 	err = binary.Write(buffer, binary.BigEndian, payloadBytes)
 	if err != nil {
 		return []byte{}, fmt.Errorf("%v", err)
 	}
 
-	err = binary.Write(buffer, binary.BigEndian, p.PacketPost)
+	tmpBuff = new(bytes.Buffer)
+	err = binary.Write(tmpBuff, binary.BigEndian, p.PacketPost)
 	if err != nil {
 		return []byte{}, fmt.Errorf("%v", err)
+	}
+	if encodeIntoHex {
+		buffer.Write([]byte(hex.EncodeToString(tmpBuff.Bytes())))
+	} else {
+		buffer.Write(tmpBuff.Bytes())
 	}
 
 	return buffer.Bytes(), nil
