@@ -61,9 +61,9 @@ func TestPacketDecode(t *testing.T) {
 
 func TestPacketChecksum(t *testing.T) {
 	testCases := []struct {
-		Name        string
-		Payload     Packet
-		ExpectedCrc byte
+		Name             string
+		Payload          Packet
+		ExpectedChecksum byte
 	}{
 		{
 			Name: "Checksum ping 1",
@@ -78,7 +78,7 @@ func TestPacketChecksum(t *testing.T) {
 					Checksum: 0x00,
 				},
 			},
-			ExpectedCrc: 0x0A,
+			ExpectedChecksum: 0x0A,
 		},
 		{
 			Name: "Checksum ping 2",
@@ -93,7 +93,7 @@ func TestPacketChecksum(t *testing.T) {
 					Checksum: 0x00,
 				},
 			},
-			ExpectedCrc: 0x0B,
+			ExpectedChecksum: 0x0B,
 		},
 		{
 			Name: "Checksum ping 3",
@@ -108,7 +108,7 @@ func TestPacketChecksum(t *testing.T) {
 					Checksum: 0x00,
 				},
 			},
-			ExpectedCrc: 0x0C,
+			ExpectedChecksum: 0x0C,
 		},
 		{
 			Name: "Checksum Login",
@@ -123,7 +123,7 @@ func TestPacketChecksum(t *testing.T) {
 					Checksum: 0x00,
 				},
 			},
-			ExpectedCrc: 0x2D,
+			ExpectedChecksum: 0x2D,
 		},
 	}
 
@@ -136,7 +136,7 @@ func TestPacketChecksum(t *testing.T) {
 				test.Fail()
 			}
 
-			expected := testCase.ExpectedCrc
+			expected := testCase.ExpectedChecksum
 			if crc != expected {
 				test.Logf("Expected value: 0x%X, Actual value: 0x%X", expected, crc)
 				test.Fail()

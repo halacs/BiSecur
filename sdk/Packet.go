@@ -48,7 +48,17 @@ func DecodePacket(packetLength uint16, buffer *bytes.Buffer) (*Packet, error) {
 		return nil, fmt.Errorf("failed to decode payload part of Packet. %v", err)
 	}
 
-	p.payload = payload.ReceivedPayload(payloadBytes)
+	// Let's decode packet payload according to Command ID
+	switch p.CommandID {
+	case COMMANDID_LOGIN:
+		pl, err := payload.DecodeLoginPacket(payloadBytes)
+		if err != nil {
+			return nil, err
+		}
+		p.payload = pl
+	default:
+		p.payload = payload.EmptyPayload()
+	}
 
 	err = binary.Read(buffer, binary.BigEndian, &p.PacketPost)
 	if err != nil {

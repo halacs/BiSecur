@@ -10,6 +10,16 @@ type Login struct {
 	password string
 }
 
+func DecodeLoginPacket(payloadBytes []byte) (PayloadInterface, error) {
+	usernameLength := payloadBytes[0]
+
+	firstPasswordCharIndex := usernameLength + 1
+	username := string(payloadBytes[1 : usernameLength+1])
+	password := string(payloadBytes[firstPasswordCharIndex:])
+
+	return LoginPayload(username, password), nil
+}
+
 func (l *Login) Encode() []byte {
 	data := getHormanEncodedUsernamePassword(l.username, l.password)
 	return data

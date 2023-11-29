@@ -131,17 +131,16 @@ func DecodeTransmissionContainer(buffer *bytes.Buffer) (*TransmissionContainer, 
 		return nil, fmt.Errorf("failed to decode part of TransmissionContainerPost. %v", err)
 	}
 
-	/*
-		// Validate checksum
-		calculatedChecksum, err := tc.getChecksum()
-		if err != nil {
-			return nil, fmt.Errorf("failed to calculate checksum of received Transmission Container. %v", err)
-		}
-		actualChecksum := tc.Checksum
-		if calculatedChecksum != actualChecksum {
-			return nil, fmt.Errorf("invalid checksum on transport container. Expected checksum value: %d, Actual checksum value: %d", calculatedChecksum, actualChecksum)
-		}
-	*/
+	// Validate checksum
+	calculatedChecksum, err := tc.getChecksum()
+	if err != nil {
+		return nil, fmt.Errorf("failed to calculate checksum of received Transmission Container. %v", err)
+	}
+	actualChecksum := tc.Checksum
+	if calculatedChecksum != actualChecksum {
+		return nil, fmt.Errorf("invalid checksum on transport container. Expected checksum value: %d, Actual checksum value: %d", calculatedChecksum, actualChecksum)
+	}
+
 	return &tc, nil
 }
 
