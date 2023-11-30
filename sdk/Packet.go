@@ -56,6 +56,12 @@ func DecodePacket(packetLength uint16, buffer *bytes.Buffer) (*Packet, error) {
 			return nil, err
 		}
 		p.payload = pl
+	case COMMANDID_ERROR:
+		pl, err := payload.DecodeErrorPacket(payloadBytes)
+		if err != nil {
+			return nil, err
+		}
+		p.payload = pl
 	default:
 		p.payload = payload.EmptyPayload()
 	}
@@ -170,4 +176,8 @@ func (p *Packet) Equal(o *Packet) bool {
 	}
 
 	return true
+}
+
+func (p *Packet) String() string {
+	return fmt.Sprintf("Tag=0x%X, Token=0x%X, CommandID=0x%X, payload=%s", p.TAG, p.Token, p.CommandID, p.payload)
 }

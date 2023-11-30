@@ -24,35 +24,35 @@ type TransmissionContainerPost struct {
 	Checksum byte // Checksum - 1 byte
 }
 
-func (p *TransmissionContainer) GetLength() (int, error) {
-	payloadSize := p.Packet.GetLength()
-	size := int(unsafe.Sizeof(p.TransmissionContainerPre)) + int(unsafe.Sizeof(p.TransmissionContainerPost)) + payloadSize
+func (tc *TransmissionContainer) GetLength() (int, error) {
+	payloadSize := tc.Packet.GetLength()
+	size := int(unsafe.Sizeof(tc.TransmissionContainerPre)) + int(unsafe.Sizeof(tc.TransmissionContainerPost)) + payloadSize
 	return size, nil
 }
 
-func (p *TransmissionContainer) Encode() ([]byte, error) {
-	data, err := p.encodeToHexOrNot(true)
+func (tc *TransmissionContainer) Encode() ([]byte, error) {
+	data, err := tc.encodeToHexOrNot(true)
 	return data, err
 }
 
-func (p *TransmissionContainer) encodeToHexOrNot(encodeIntoHex bool) ([]byte, error) {
+func (tc *TransmissionContainer) encodeToHexOrNot(encodeIntoHex bool) ([]byte, error) {
 	buffer := new(bytes.Buffer)
 
-	bodyHex, err := p.Packet.EncodeToHexString()
+	bodyHex, err := tc.Packet.EncodeToHexString()
 	if err != nil {
 		return buffer.Bytes(), fmt.Errorf("%v", err)
 	}
 
-	p.BodyLength = uint16(p.Packet.GetLength())
+	tc.BodyLength = uint16(tc.Packet.GetLength())
 
 	// Calculate checksum
-	p.Checksum, err = p.getChecksum()
+	tc.Checksum, err = tc.getChecksum()
 	if err != nil {
 		return []byte{}, fmt.Errorf("failed to calculage packet checksum. %v", err)
 	}
 
 	tmpBuff := new(bytes.Buffer)
-	err = binary.Write(tmpBuff, binary.BigEndian, p.TransmissionContainerPre)
+	err = binary.Write(tmpBuff, binary.BigEndian, tc.TransmissionContainerPre)
 	if err != nil {
 		return []byte{}, fmt.Errorf("%v", err)
 	}
@@ -68,7 +68,7 @@ func (p *TransmissionContainer) encodeToHexOrNot(encodeIntoHex bool) ([]byte, er
 	}
 
 	tmpBuff = new(bytes.Buffer)
-	err = binary.Write(tmpBuff, binary.BigEndian, p.TransmissionContainerPost)
+	err = binary.Write(tmpBuff, binary.BigEndian, tc.TransmissionContainerPost)
 	if err != nil {
 		return []byte{}, fmt.Errorf("%v", err)
 	}
@@ -81,12 +81,12 @@ func (p *TransmissionContainer) encodeToHexOrNot(encodeIntoHex bool) ([]byte, er
 	return buffer.Bytes(), nil
 }
 
-func (p *TransmissionContainer) GetSrcMacToHexString() string {
-	return strings.ToUpper(hex.EncodeToString(p.SrcMac[:]))
+func (tc *TransmissionContainer) GetSrcMacToHexString() string {
+	return strings.ToUpper(hex.EncodeToString(tc.SrcMac[:]))
 }
 
-func (p *TransmissionContainer) GetDstMacToHexString() string {
-	return strings.ToUpper(hex.EncodeToString(p.DstMac[:]))
+func (tc *TransmissionContainer) GetDstMacToHexString() string {
+	return strings.ToUpper(hex.EncodeToString(tc.DstMac[:]))
 }
 
 func DecodeTransmissionContainer(buffer *bytes.Buffer) (*TransmissionContainer, error) {
@@ -138,19 +138,19 @@ func DecodeTransmissionContainer(buffer *bytes.Buffer) (*TransmissionContainer, 
 	}
 	actualChecksum := tc.Checksum
 	if calculatedChecksum != actualChecksum {
-		return nil, fmt.Errorf("invalid checksum on transport container. Expected checksum value: %d, Actual checksum value: %d", calculatedChecksum, actualChecksum)
+		return nil, fmt.Errorf("invalid checksum on transport container. Expected checksum value: 0x%X, Actual checksum value: 0x%X", calculatedChecksum, actualChecksum)
 	}
 
 	return &tc, nil
 }
 
-func (p *TransmissionContainer) getChecksum() (byte, error) {
-	payloadHexBytes, err := p.Packet.EncodeToHexString()
+func (tc *TransmissionContainer) getChecksum() (byte, error) {
+	payloadHexBytes, err := tc.Packet.EncodeToHexString()
 	if err != nil {
 		return 0, err
 	}
 
-	fullTransmissionContainer := p.GetSrcMacToHexString() + p.GetDstMacToHexString() + p.Packet.GetLengthHexString() + payloadHexBytes
+	fullTransmissionContainer := tc.GetSrcMacToHexString() + tc.GetDstMacToHexString() + tc.Packet.GetLengthHexString() + payloadHexBytes
 
 	var b bytes.Buffer
 	b.WriteString(fullTransmissionContainer)
@@ -164,18 +164,22 @@ func (p *TransmissionContainer) getChecksum() (byte, error) {
 	return checksum, nil
 }
 
-func (p *TransmissionContainer) Equal(o *TransmissionContainer) bool {
-	if p.TransmissionContainerPre != o.TransmissionContainerPre {
+func (tc *TransmissionContainer) Equal(o *TransmissionContainer) bool {
+	if tc.TransmissionContainerPre != o.TransmissionContainerPre {
 		return false
 	}
 
-	if !p.Packet.Equal(&o.Packet) {
+	if !tc.Packet.Equal(&o.Packet) {
 		return false
 	}
 
-	if p.TransmissionContainerPost != o.TransmissionContainerPost {
+	if tc.TransmissionContainerPost != o.TransmissionContainerPost {
 		return false
 	}
 
 	return true
+}
+
+func (tc *TransmissionContainer) String() string {
+	return fmt.Sprintf("SrcMAC=0x%X, DstMAC=0x%X, BodyLength=0x%X, %s, Checksum=0x%X", tc.SrcMac, tc.DstMac, tc.BodyLength, tc.Packet.String(), tc.Checksum)
 }

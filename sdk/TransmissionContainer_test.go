@@ -239,6 +239,31 @@ func TestTransmissionContainerDecode(t *testing.T) {
 				},
 			},
 		},
+		{
+			Name:         "LoginFailedResponse",
+			EncodedInput: "5410EC8528BB000000000004000A020000000001020FDD",
+			ExpectedDecodedInput: TransmissionContainer{
+				TransmissionContainerPre: TransmissionContainerPre{
+					SrcMac:     [6]byte{0x54, 0x10, 0xEC, 0x85, 0x28, 0xBB},
+					DstMac:     [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x04},
+					BodyLength: 0x0A,
+				},
+				Packet: Packet{
+					PacketPre: PacketPre{
+						TAG:       0x02,
+						Token:     uint32(0x00000000),
+						CommandID: COMMANDID_ERROR,
+					},
+					payload: payload.ErrorPayload(payload.ERROR_LOGIN_FAILED),
+					PacketPost: PacketPost{
+						Checksum: 0x0F,
+					},
+				},
+				TransmissionContainerPost: TransmissionContainerPost{
+					Checksum: 0xDD,
+				},
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -268,9 +293,10 @@ func TestTransmissionContainerDecode(t *testing.T) {
 
 			expected := &testCase.ExpectedDecodedInput
 			if decoded == nil || !expected.Equal(decoded) {
-				test.Logf("Expected value: %v, Actual value: %v", expected, decoded)
+				test.Logf("Expected value: 0x%X, Actual value: 0x%X", expected, decoded)
 				test.Fail()
 			}
+			test.Logf("Decoded transmission container: %v", decoded)
 		})
 	}
 }
