@@ -1,6 +1,9 @@
 package payload
 
-import "encoding/hex"
+import (
+	"encoding/hex"
+	"fmt"
+)
 
 type Jcmp struct {
 	Payload
@@ -19,6 +22,14 @@ func (j *Jcmp) Encode() []byte {
 	return []byte(data)
 }
 
+func DecodeJcmpPacket(payloadBytes []byte) (PayloadInterface, error) {
+	return &Jcmp{
+		Payload{
+			data: payloadBytes, // json request/response
+		},
+	}, nil
+}
+
 func (j *Jcmp) String() string {
-	return "Jcmp"
+	return fmt.Sprintf("Jcmp: %s", j.ToByteArray())
 }

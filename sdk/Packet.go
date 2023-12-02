@@ -29,6 +29,18 @@ func (p *PacketPre) getSize() int {
 	return binary.Size(p)
 }
 
+// Gives back if a package contains data of a response or not
+// based on the most significant bit of the raw command ID
+func (p *PacketPre) isResponse() bool {
+	return (p.CommandID & 0x80) == 0x80
+}
+
+// Gives back the command ID after clearing
+// the most significant bit set in case of a response only
+func (p *PacketPre) getCommandID() uint8 {
+	return p.CommandID | 0x7F
+}
+
 func (p *PacketPost) getSize() int {
 	return binary.Size(p)
 }
@@ -49,17 +61,24 @@ func DecodePacket(packetLength uint16, buffer *bytes.Buffer) (*Packet, error) {
 	}
 
 	// Let's decode packet payload according to Command ID
-	switch p.CommandID {
+	commandID := p.CommandID & 0x7F
+	switch commandID {
 	case COMMANDID_LOGIN:
-		pl, err := payload.DecodeLoginPacket(payloadBytes)
-		if err != nil {
-			return nil, err
+		pl, err2 := payload.DecodeLoginPacket(payloadBytes)
+		if err2 != nil {
+			return nil, err2
 		}
 		p.payload = pl
 	case COMMANDID_ERROR:
-		pl, err := payload.DecodeErrorPacket(payloadBytes)
-		if err != nil {
-			return nil, err
+		pl, err2 := payload.DecodeErrorPacket(payloadBytes)
+		if err2 != nil {
+			return nil, err2
+		}
+		p.payload = pl
+	case COMMANDID_JMCP:
+		pl, err2 := payload.DecodeJcmpPacket(payloadBytes)
+		if err2 != nil {
+			return nil, err2
 		}
 		p.payload = pl
 	default:
@@ -179,5 +198,5 @@ func (p *Packet) Equal(o *Packet) bool {
 }
 
 func (p *Packet) String() string {
-	return fmt.Sprintf("Tag=0x%X, Token=0x%X, CommandID=0x%X, payload=%s", p.TAG, p.Token, p.CommandID, p.payload)
+	return fmt.Sprintf("Tag=0x%X, Token=0x%X, CommandID=0x%X, payload=%s, isResponse=%t", p.TAG, p.Token, p.getCommandID(), p.payload, p.isResponse())
 }

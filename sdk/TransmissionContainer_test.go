@@ -15,7 +15,7 @@ func TestTransmissionContainerEncode(t *testing.T) {
 		ExpectedServerRequest string
 	}{
 		{
-			Name: "Ping 1",
+			Name: "Ping 1 request",
 			Request: TransmissionContainer{
 				TransmissionContainerPre: TransmissionContainerPre{
 					SrcMac: [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
@@ -39,7 +39,7 @@ func TestTransmissionContainerEncode(t *testing.T) {
 			ExpectedServerRequest: "0000000000005410EC8528BB00090100000000000A68",
 		},
 		{
-			Name: "Ping 2",
+			Name: "Ping 2 request",
 			Request: TransmissionContainer{
 				TransmissionContainerPre: TransmissionContainerPre{
 					SrcMac: [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
@@ -63,7 +63,7 @@ func TestTransmissionContainerEncode(t *testing.T) {
 			ExpectedServerRequest: "0000000000005410EC8528BB00090200000000000B6A",
 		},
 		{
-			Name: "Ping 3",
+			Name: "Ping 3 request",
 			Request: TransmissionContainer{
 				TransmissionContainerPre: TransmissionContainerPre{
 					SrcMac: [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
@@ -87,7 +87,7 @@ func TestTransmissionContainerEncode(t *testing.T) {
 			ExpectedServerRequest: "0000000000005410EC8528BB00090300000000000C6C",
 		},
 		{
-			Name: "LoginPayload",
+			Name: "Login request",
 			Request: TransmissionContainer{
 				TransmissionContainerPre: TransmissionContainerPre{
 					SrcMac: [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
@@ -111,7 +111,7 @@ func TestTransmissionContainerEncode(t *testing.T) {
 			ExpectedServerRequest: "0000000000005410EC8528BB001A00000000001008757365726E616D6570617373776F7264059D",
 		},
 		{
-			Name: "GetNamePayload",
+			Name: "Get Name request",
 			Request: TransmissionContainer{
 				TransmissionContainerPre: TransmissionContainerPre{
 					SrcMac: [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
@@ -135,7 +135,7 @@ func TestTransmissionContainerEncode(t *testing.T) {
 			ExpectedServerRequest: "0000000000005410EC8528BB00090100000000263062",
 		},
 		{
-			Name: "HmGetTransitionPayload",
+			Name: "Hm Get Transition request",
 			Request: TransmissionContainer{
 				TransmissionContainerPre: TransmissionContainerPre{
 					SrcMac: [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x06},
@@ -159,7 +159,7 @@ func TestTransmissionContainerEncode(t *testing.T) {
 			ExpectedServerRequest: "0000000000065410EC8528BB000A069683338670005206",
 		},
 		{
-			Name: "JcmpGetValuesPayload",
+			Name: "Jcmp Get Values request",
 			Request: TransmissionContainer{
 				TransmissionContainerPre: TransmissionContainerPre{
 					SrcMac: [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x06},
@@ -183,7 +183,7 @@ func TestTransmissionContainerEncode(t *testing.T) {
 			ExpectedServerRequest: "0000000000065410EC8528BB001D0496833386067B22636D64223A224745545F56414C554553227DF63B",
 		},
 		{
-			Name: "JcmpGetGroupsPayload",
+			Name: "Jcmp Get Groups request",
 			Request: TransmissionContainer{
 				TransmissionContainerPre: TransmissionContainerPre{
 					SrcMac: [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x06},
@@ -235,7 +235,7 @@ func TestTransmissionContainerDecode(t *testing.T) {
 		ExpectedDecodedInput TransmissionContainer
 	}{
 		{
-			Name:         "Ping 1",
+			Name:         "Ping 1 Request",
 			EncodedInput: "0000000000005410EC8528BB00090100000000000A68",
 			ExpectedDecodedInput: TransmissionContainer{
 				TransmissionContainerPre: TransmissionContainerPre{
@@ -260,7 +260,7 @@ func TestTransmissionContainerDecode(t *testing.T) {
 			},
 		},
 		{
-			Name:         "Ping 2",
+			Name:         "Ping 2 Request",
 			EncodedInput: "0000000000005410EC8528BB00090200000000000B6A",
 			ExpectedDecodedInput: TransmissionContainer{
 				TransmissionContainerPre: TransmissionContainerPre{
@@ -285,7 +285,7 @@ func TestTransmissionContainerDecode(t *testing.T) {
 			},
 		},
 		{
-			Name:         "Ping 3",
+			Name:         "Ping 3 Request",
 			EncodedInput: "0000000000005410EC8528BB00090300000000000C6C",
 			ExpectedDecodedInput: TransmissionContainer{
 				TransmissionContainerPre: TransmissionContainerPre{
@@ -310,7 +310,7 @@ func TestTransmissionContainerDecode(t *testing.T) {
 			},
 		},
 		{
-			Name:         "LoginPayload",
+			Name:         "Login Request",
 			EncodedInput: "0000000000005410EC8528BB001A00000000001008757365726E616D6570617373776F7264059D",
 			ExpectedDecodedInput: TransmissionContainer{
 				TransmissionContainerPre: TransmissionContainerPre{
@@ -335,7 +335,7 @@ func TestTransmissionContainerDecode(t *testing.T) {
 			},
 		},
 		{
-			Name:         "LoginFailedResponse",
+			Name:         "Login Failed Response",
 			EncodedInput: "5410EC8528BB000000000004000A020000000001020FDD",
 			ExpectedDecodedInput: TransmissionContainer{
 				TransmissionContainerPre: TransmissionContainerPre{
@@ -356,6 +356,56 @@ func TestTransmissionContainerDecode(t *testing.T) {
 				},
 				TransmissionContainerPost: TransmissionContainerPost{
 					Checksum: 0xDD,
+				},
+			},
+		},
+		{
+			Name:         "Get Values Response",
+			EncodedInput: "5410EC8528BB00000000000601CB0496833386867B223030223A312C223031223A302C223032223A302C223033223A302C223034223A302C223035223A302C223036223A302C223037223A302C223038223A302C223039223A302C223130223A302C223131223A302C223132223A302C223133223A302C223134223A302C223135223A302C223136223A302C223137223A302C223138223A302C223139223A302C223230223A302C223231223A302C223232223A302C223233223A302C223234223A302C223235223A302C223236223A302C223237223A302C223238223A302C223239223A302C223330223A302C223331223A302C223332223A302C223333223A302C223334223A302C223335223A302C223336223A302C223337223A302C223338223A302C223339223A302C223430223A302C223431223A302C223432223A302C223433223A302C223434223A302C223435223A302C223436223A302C223437223A302C223438223A302C223439223A302C223530223A302C223531223A302C223532223A302C223533223A302C223534223A302C223535223A302C223536223A302C223537223A302C223538223A302C223539223A302C223630223A302C223631223A302C223632223A302C223633223A38377D75F9",
+			ExpectedDecodedInput: TransmissionContainer{
+				TransmissionContainerPre: TransmissionContainerPre{
+					SrcMac:     [6]byte{0x54, 0x10, 0xEC, 0x85, 0x28, 0xBB},
+					DstMac:     [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x06},
+					BodyLength: 0x01CB,
+				},
+				Packet: Packet{
+					PacketPre: PacketPre{
+						TAG:       0x04,
+						Token:     uint32(0x96833386),
+						CommandID: COMMANDID_JMCP_RESPONSE,
+					},
+					payload: payload.JcmpPayload("{\"00\":1,\"01\":0,\"02\":0,\"03\":0,\"04\":0,\"05\":0,\"06\":0,\"07\":0,\"08\":0,\"09\":0,\"10\":0,\"11\":0,\"12\":0,\"13\":0,\"14\":0,\"15\":0,\"16\":0,\"17\":0,\"18\":0,\"19\":0,\"20\":0,\"21\":0,\"22\":0,\"23\":0,\"24\":0,\"25\":0,\"26\":0,\"27\":0,\"28\":0,\"29\":0,\"30\":0,\"31\":0,\"32\":0,\"33\":0,\"34\":0,\"35\":0,\"36\":0,\"37\":0,\"38\":0,\"39\":0,\"40\":0,\"41\":0,\"42\":0,\"43\":0,\"44\":0,\"45\":0,\"46\":0,\"47\":0,\"48\":0,\"49\":0,\"50\":0,\"51\":0,\"52\":0,\"53\":0,\"54\":0,\"55\":0,\"56\":0,\"57\":0,\"58\":0,\"59\":0,\"60\":0,\"61\":0,\"62\":0,\"63\":87}"),
+					PacketPost: PacketPost{
+						Checksum: 0x75,
+					},
+				},
+				TransmissionContainerPost: TransmissionContainerPost{
+					Checksum: 0xF9,
+				},
+			},
+		},
+		{
+			Name:         "Get Groups Response",
+			EncodedInput: "5410EC8528BB000000000006003F0596833386865B7B226964223A302C226E616D65223A22676172617A73222C22706F727473223A5B7B226964223A302C2274797065223A317D5D7D5D88CF",
+			ExpectedDecodedInput: TransmissionContainer{
+				TransmissionContainerPre: TransmissionContainerPre{
+					SrcMac:     [6]byte{0x54, 0x10, 0xEC, 0x85, 0x28, 0xBB},
+					DstMac:     [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x06},
+					BodyLength: 0x003F,
+				},
+				Packet: Packet{
+					PacketPre: PacketPre{
+						TAG:       0x05,
+						Token:     uint32(0x96833386),
+						CommandID: COMMANDID_JMCP_RESPONSE,
+					},
+					payload: payload.JcmpPayload("[{\"id\":0,\"name\":\"garazs\",\"ports\":[{\"id\":0,\"type\":1}]}]"),
+					PacketPost: PacketPost{
+						Checksum: 0x88,
+					},
+				},
+				TransmissionContainerPost: TransmissionContainerPost{
+					Checksum: 0xCF,
 				},
 			},
 		},
@@ -475,7 +525,7 @@ func TestTransmissionContainerChecksum(t *testing.T) {
 			ExpectedChecksum: 0x6C,
 		},
 		{
-			Name: "LoginPayload checksum",
+			Name: "Login Payload checksum",
 			Packet: TransmissionContainer{
 				TransmissionContainerPre: TransmissionContainerPre{
 					SrcMac: [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
@@ -499,7 +549,7 @@ func TestTransmissionContainerChecksum(t *testing.T) {
 			ExpectedChecksum: 0x1E,
 		},
 		{
-			Name: "GetNamePayload checksum",
+			Name: "Get Name Payload checksum",
 			Packet: TransmissionContainer{
 				TransmissionContainerPre: TransmissionContainerPre{
 					SrcMac: [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
