@@ -61,10 +61,16 @@ func DecodePacket(packetLength uint16, buffer *bytes.Buffer) (*Packet, error) {
 	}
 
 	// Let's decode packet payload according to Command ID
-	commandID := p.CommandID & 0x7F
+	commandID := p.CommandID //& 0x7F
 	switch commandID {
 	case COMMANDID_LOGIN:
 		pl, err2 := payload.DecodeLoginPacket(payloadBytes)
+		if err2 != nil {
+			return nil, err2
+		}
+		p.payload = pl
+	case COMMANDID_LOGIN_RESPONSE:
+		pl, err2 := payload.DecodeLoginResponsePacket(payloadBytes)
 		if err2 != nil {
 			return nil, err2
 		}
@@ -75,7 +81,7 @@ func DecodePacket(packetLength uint16, buffer *bytes.Buffer) (*Packet, error) {
 			return nil, err2
 		}
 		p.payload = pl
-	case COMMANDID_JMCP:
+	case COMMANDID_JMCP_RESPONSE:
 		pl, err2 := payload.DecodeJcmpPacket(payloadBytes)
 		if err2 != nil {
 			return nil, err2
@@ -198,5 +204,5 @@ func (p *Packet) Equal(o *Packet) bool {
 }
 
 func (p *Packet) String() string {
-	return fmt.Sprintf("Tag=0x%X, Token=0x%X, CommandID=0x%X, payload=%s, isResponse=%t", p.TAG, p.Token, p.getCommandID(), p.payload, p.isResponse())
+	return fmt.Sprintf("Tag=0x%X, Token=0x%X, CommandID=0x%X, payload=[%s], isResponse=%t", p.TAG, p.Token, p.getCommandID(), p.payload, p.isResponse())
 }

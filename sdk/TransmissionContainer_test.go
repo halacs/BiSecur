@@ -409,6 +409,31 @@ func TestTransmissionContainerDecode(t *testing.T) {
 				},
 			},
 		},
+		{
+			Name:         "Login Response",
+			EncodedInput: "5410EC8528BB000000000006000E0300000000900196833386748E",
+			ExpectedDecodedInput: TransmissionContainer{
+				TransmissionContainerPre: TransmissionContainerPre{
+					SrcMac:     [6]byte{0x54, 0x10, 0xEC, 0x85, 0x28, 0xBB},
+					DstMac:     [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x06},
+					BodyLength: 0x000E,
+				},
+				Packet: Packet{
+					PacketPre: PacketPre{
+						TAG:       0x03,
+						Token:     uint32(0x00000000),
+						CommandID: COMMANDID_LOGIN_RESPONSE,
+					},
+					payload: payload.LoginResponsePayload(0x01, 0x96833386),
+					PacketPost: PacketPost{
+						Checksum: 0x74,
+					},
+				},
+				TransmissionContainerPost: TransmissionContainerPost{
+					Checksum: 0x8E,
+				},
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -431,7 +456,7 @@ func TestTransmissionContainerDecode(t *testing.T) {
 
 			decoded, err := DecodeTransmissionContainer(encodedInputBuffer)
 			if err != nil {
-				test.Logf("Failed to encode request. %v", err)
+				test.Logf("Failed to decode request. %v", err)
 				test.Fail()
 				return
 			}
@@ -525,7 +550,7 @@ func TestTransmissionContainerChecksum(t *testing.T) {
 			ExpectedChecksum: 0x6C,
 		},
 		{
-			Name: "Login Payload checksum",
+			Name: "Login checksum",
 			Packet: TransmissionContainer{
 				TransmissionContainerPre: TransmissionContainerPre{
 					SrcMac: [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
