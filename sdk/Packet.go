@@ -87,6 +87,12 @@ func DecodePacket(packetLength uint16, buffer *bytes.Buffer) (*Packet, error) {
 			return nil, err2
 		}
 		p.payload = pl
+	case COMMANDID_HM_GET_TRANSITION_RESPONSE:
+		pl, err2 := payload.DecodeHmGetTransitionResponsePacket(payloadBytes)
+		if err2 != nil {
+			return nil, err2
+		}
+		p.payload = pl
 	default:
 		p.payload = payload.EmptyPayload()
 	}

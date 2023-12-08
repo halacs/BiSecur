@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"bisecure/sdk/payload"
+	"bisecure/sdk/payload/hcp"
 	"bytes"
 	"encoding/hex"
 	"strings"
@@ -206,6 +207,54 @@ func TestTransmissionContainerEncode(t *testing.T) {
 			},
 			ExpectedServerRequest: "0000000000065410EC8528BB001D0596833386067B22434D44223A224745545F47524F555053227DA733",
 		},
+		{
+			Name: "Jcmp Get Users request",
+			Request: TransmissionContainer{
+				TransmissionContainerPre: TransmissionContainerPre{
+					SrcMac: [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x06},
+					DstMac: [6]byte{0x54, 0x10, 0xEC, 0x85, 0x28, 0xBB},
+				},
+				Packet: Packet{
+					PacketPre: PacketPre{
+						TAG:       0x05,
+						Token:     uint32(0x96833386),
+						CommandID: COMMANDID_JMCP,
+					},
+					payload:    payload.JcmpPayload("{\"CMD\":\"GET_USERS\"}"),
+					PacketPost: PacketPost{
+						//Checksum: 0xA7,
+					},
+				},
+				TransmissionContainerPost: TransmissionContainerPost{
+					//Checksum: 0x33,
+				},
+			},
+			ExpectedServerRequest: "0000000000065410EC8528BB001C0596833386067B22434D44223A224745545F5553455253227D58AE",
+		},
+		{ // 000000000006 5410EC036150 00 0B00 302B7D75 3300FF 8A 82
+			Name: "Set State request",
+			Request: TransmissionContainer{
+				TransmissionContainerPre: TransmissionContainerPre{
+					SrcMac: [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x06},
+					DstMac: [6]byte{0x54, 0x10, 0xEC, 0x03, 0x61, 0x50},
+				},
+				Packet: Packet{
+					PacketPre: PacketPre{
+						TAG:       0x00,
+						Token:     uint32(0x302B7D75),
+						CommandID: COMMANDID_SET_STATE,
+					},
+					payload: payload.SetStatePayload(),
+					PacketPost: PacketPost{
+						Checksum: 0x8A,
+					},
+				},
+				TransmissionContainerPost: TransmissionContainerPost{
+					Checksum: 0x82,
+				},
+			},
+			ExpectedServerRequest: "0000000000065410EC036150000B00302B7D753300FF8A82",
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -360,6 +409,31 @@ func TestTransmissionContainerDecode(t *testing.T) {
 			},
 		},
 		{
+			Name:         "Permission Denied Response",
+			EncodedInput: "5410EC036150000000000006000A007F162664010C36EB",
+			ExpectedDecodedInput: TransmissionContainer{
+				TransmissionContainerPre: TransmissionContainerPre{
+					SrcMac:     [6]byte{0x54, 0x10, 0xEC, 0x03, 0x61, 0x50},
+					DstMac:     [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x06},
+					BodyLength: 0x0A,
+				},
+				Packet: Packet{
+					PacketPre: PacketPre{
+						TAG:       0x00,
+						Token:     uint32(0x7F162664),
+						CommandID: COMMANDID_ERROR,
+					},
+					payload: payload.ErrorPayload(payload.ERROR_PERMISSION_DENIED),
+					PacketPost: PacketPost{
+						Checksum: 0x36,
+					},
+				},
+				TransmissionContainerPost: TransmissionContainerPost{
+					Checksum: 0xEB,
+				},
+			},
+		},
+		{
 			Name:         "Get Values Response",
 			EncodedInput: "5410EC8528BB00000000000601CB0496833386867B223030223A312C223031223A302C223032223A302C223033223A302C223034223A302C223035223A302C223036223A302C223037223A302C223038223A302C223039223A302C223130223A302C223131223A302C223132223A302C223133223A302C223134223A302C223135223A302C223136223A302C223137223A302C223138223A302C223139223A302C223230223A302C223231223A302C223232223A302C223233223A302C223234223A302C223235223A302C223236223A302C223237223A302C223238223A302C223239223A302C223330223A302C223331223A302C223332223A302C223333223A302C223334223A302C223335223A302C223336223A302C223337223A302C223338223A302C223339223A302C223430223A302C223431223A302C223432223A302C223433223A302C223434223A302C223435223A302C223436223A302C223437223A302C223438223A302C223439223A302C223530223A302C223531223A302C223532223A302C223533223A302C223534223A302C223535223A302C223536223A302C223537223A302C223538223A302C223539223A302C223630223A302C223631223A302C223632223A302C223633223A38377D75F9",
 			ExpectedDecodedInput: TransmissionContainer{
@@ -431,6 +505,55 @@ func TestTransmissionContainerDecode(t *testing.T) {
 				},
 				TransmissionContainerPost: TransmissionContainerPost{
 					Checksum: 0x8E,
+				},
+			},
+		},
+		{ // 5410EC036150 000000000006 0019 0000000000F0B800001801086C020000000000000000 50 93
+			Name:         "Hm Get Transition Response",
+			EncodedInput: "5410EC03615000000000000600190000000000F0B800001801086C0200000000000000005093",
+			ExpectedDecodedInput: TransmissionContainer{
+				TransmissionContainerPre: TransmissionContainerPre{
+					SrcMac:     [6]byte{0x54, 0x10, 0xEC, 0x03, 0x61, 0x50},
+					DstMac:     [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x06},
+					BodyLength: 0x0019,
+				},
+				Packet: Packet{
+					PacketPre: PacketPre{
+						TAG:       0x00,
+						Token:     uint32(0x00000000),
+						CommandID: COMMANDID_HM_GET_TRANSITION_RESPONSE,
+					},
+					payload: &payload.HmGetTransitionResponse{
+						Payload:               payload.MockPayload("B800001801086C020000000000000000"), // TODO not the most nice solution to validate but never want to generate this kind of package anyway
+						StateInPercent:        92,
+						DesiredStateInPercent: 0,
+						Error:                 false,
+						AutoClose:             false,
+						DriveTime:             24,
+						Gk:                    264,
+						Hcp: &hcp.Hcp{
+							PositionOpen:     false,
+							PositionClose:    false,
+							OptionRelais:     true,
+							LightBarrier:     true,
+							Error:            false,
+							DrivingToClose:   true,
+							Driving:          true,
+							HalfOpened:       false,
+							ForecastLeadTime: false,
+							Learned:          true,
+							NotReferenced:    false,
+						},
+						Exst: []byte{0, 0, 0, 0, 0, 0, 0, 0},
+						//Time: time.UnixMilli(1701456598985267), // 2023-12-01T19:49:58.985267
+						//IgnoreRetries: true,
+					},
+					PacketPost: PacketPost{
+						Checksum: 0x50,
+					},
+				},
+				TransmissionContainerPost: TransmissionContainerPost{
+					Checksum: 0x93,
 				},
 			},
 		},

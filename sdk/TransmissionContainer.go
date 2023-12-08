@@ -137,9 +137,13 @@ func DecodeTransmissionContainer(buffer *bytes.Buffer) (*TransmissionContainer, 
 	}
 	expectedChecksum := tc.Checksum
 	if calculatedChecksum != expectedChecksum {
-		return nil, fmt.Errorf("invalid transport container checksum. Expected checksum value: 0x%X, Actual checksum value: 0x%X", expectedChecksum, calculatedChecksum)
+		return nil, fmt.Errorf("invalid transport container checksum. Received checksum: 0x%X, Calculated checksum: 0x%X", expectedChecksum, calculatedChecksum)
 	}
 	return &tc, nil
+}
+
+func (tc *TransmissionContainer) isResponse() bool {
+	return (tc.Packet.CommandID & RESPONSE_MASK) == RESPONSE_MASK
 }
 
 func (tc *TransmissionContainer) getChecksum() (byte, error) {
@@ -168,6 +172,7 @@ func (tc *TransmissionContainer) Equal(o *TransmissionContainer) bool {
 	}
 
 	if !tc.Packet.Equal(&o.Packet) {
+		fmt.Printf("%v\n%v", tc.Packet.payload.ToByteArray(), o.Packet.payload.ToByteArray())
 		return false
 	}
 
@@ -179,5 +184,5 @@ func (tc *TransmissionContainer) Equal(o *TransmissionContainer) bool {
 }
 
 func (tc *TransmissionContainer) String() string {
-	return fmt.Sprintf("SrcMAC=0x%X, DstMAC=0x%X, BodyLength=0x%X, %s, Checksum=0x%X", tc.SrcMac, tc.DstMac, tc.BodyLength, tc.Packet.String(), tc.Checksum)
+	return fmt.Sprintf("SrcMAC=0x%X, DstMAC=0x%X, BodyLength=0x%X, %s, Checksum=0x%X, isResponse: %t", tc.SrcMac, tc.DstMac, tc.BodyLength, tc.Packet.String(), tc.Checksum, tc.isResponse())
 }
