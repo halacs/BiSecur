@@ -35,6 +35,10 @@ func (tc *TransmissionContainer) Encode() ([]byte, error) {
 	return data, err
 }
 
+func (tc *TransmissionContainer) toHexString(data []byte) string {
+	return strings.ToUpper(hex.EncodeToString(data))
+}
+
 func (tc *TransmissionContainer) encodeToHexOrNot(encodeIntoHex bool) ([]byte, error) {
 	buffer := new(bytes.Buffer)
 
@@ -57,7 +61,7 @@ func (tc *TransmissionContainer) encodeToHexOrNot(encodeIntoHex bool) ([]byte, e
 		return []byte{}, fmt.Errorf("%v", err)
 	}
 	if encodeIntoHex {
-		buffer.Write([]byte(hex.EncodeToString(tmpBuff.Bytes())))
+		buffer.Write([]byte(tc.toHexString(tmpBuff.Bytes())))
 	} else {
 		buffer.Write(tmpBuff.Bytes())
 	}
@@ -73,7 +77,7 @@ func (tc *TransmissionContainer) encodeToHexOrNot(encodeIntoHex bool) ([]byte, e
 		return []byte{}, fmt.Errorf("%v", err)
 	}
 	if encodeIntoHex {
-		buffer.Write([]byte(hex.EncodeToString(tmpBuff.Bytes())))
+		buffer.Write([]byte(tc.toHexString(tmpBuff.Bytes())))
 	} else {
 		buffer.Write(tmpBuff.Bytes())
 	}
@@ -89,10 +93,20 @@ func (tc *TransmissionContainer) GetDstMacToHexString() string {
 	return strings.ToUpper(hex.EncodeToString(tc.DstMac[:]))
 }
 
-func DecodeTransmissionContainer(buffer *bytes.Buffer) (*TransmissionContainer, error) {
+func DecodeTransmissionContainer(bufferHex *bytes.Buffer) (*TransmissionContainer, error) {
+	buffer := new(bytes.Buffer)
+	inputBytes, err := hex.DecodeString(bufferHex.String())
+	if err != nil {
+		return nil, err
+	}
+	_, err = buffer.Write(inputBytes)
+	if err != nil {
+		return nil, err
+	}
+
 	tc := TransmissionContainer{}
 
-	err := binary.Read(buffer, binary.BigEndian, &tc.TransmissionContainerPre.SrcMac)
+	err = binary.Read(buffer, binary.BigEndian, &tc.TransmissionContainerPre.SrcMac)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode part of TransmissionContainerPre. %v", err)
 	}
@@ -184,5 +198,5 @@ func (tc *TransmissionContainer) Equal(o *TransmissionContainer) bool {
 }
 
 func (tc *TransmissionContainer) String() string {
-	return fmt.Sprintf("SrcMAC=0x%X, DstMAC=0x%X, BodyLength=0x%X, %s, Checksum=0x%X, isResponse: %t", tc.SrcMac, tc.DstMac, tc.BodyLength, tc.Packet.String(), tc.Checksum, tc.isResponse())
+	return fmt.Sprintf("SrcMAC=0x%X, DstMAC=0x%X, BodyLength=0x%X, packet=[%s], Checksum=0x%X, isResponse: %t", tc.SrcMac, tc.DstMac, tc.BodyLength, tc.Packet.String(), tc.Checksum, tc.isResponse())
 }

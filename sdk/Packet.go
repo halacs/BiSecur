@@ -38,7 +38,7 @@ func (p *PacketPre) isResponse() bool {
 // Gives back the command ID after clearing
 // the most significant bit set in case of a response only
 func (p *PacketPre) getCommandID() uint8 {
-	return p.CommandID | 0x7F
+	return p.CommandID & (RESPONSE_MASK ^ 0xFF)
 }
 
 func (p *PacketPost) getSize() int {
@@ -115,6 +115,10 @@ func (p *Packet) Encode() ([]byte, error) {
 	return byteData, err
 }
 
+func (p *Packet) toHexString(data []byte) string {
+	return strings.ToUpper(hex.EncodeToString(data))
+}
+
 func (p *Packet) encodeIntoHexOrNot(encodeIntoHex bool) ([]byte, error) {
 	var err error
 	p.Checksum, err = p.getChecksum()
@@ -130,7 +134,7 @@ func (p *Packet) encodeIntoHexOrNot(encodeIntoHex bool) ([]byte, error) {
 		return []byte{}, fmt.Errorf("%v", err)
 	}
 	if encodeIntoHex {
-		buffer.Write([]byte(hex.EncodeToString(tmpBuff.Bytes())))
+		buffer.Write([]byte(p.toHexString(tmpBuff.Bytes())))
 	} else {
 		buffer.Write(tmpBuff.Bytes())
 	}
@@ -147,7 +151,7 @@ func (p *Packet) encodeIntoHexOrNot(encodeIntoHex bool) ([]byte, error) {
 		return []byte{}, fmt.Errorf("%v", err)
 	}
 	if encodeIntoHex {
-		buffer.Write([]byte(hex.EncodeToString(tmpBuff.Bytes())))
+		buffer.Write([]byte(p.toHexString(tmpBuff.Bytes())))
 	} else {
 		buffer.Write(tmpBuff.Bytes())
 	}
@@ -210,5 +214,6 @@ func (p *Packet) Equal(o *Packet) bool {
 }
 
 func (p *Packet) String() string {
-	return fmt.Sprintf("Tag=0x%X, Token=0x%X, CommandID=0x%X, payload=[%s], isResponse=%t", p.TAG, p.Token, p.getCommandID(), p.payload, p.isResponse())
+	return fmt.Sprintf("Tag=0x%X, Token=0x%X, CommandID=0x%X, payload=[%s], Checksum=0x%X, isResponse=%t",
+		p.TAG, p.Token, p.CommandID, p.payload, p.Checksum, p.isResponse())
 }

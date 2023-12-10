@@ -4,8 +4,6 @@ import (
 	"bisecure/sdk/payload"
 	"bisecure/sdk/payload/hcp"
 	"bytes"
-	"encoding/hex"
-	"strings"
 	"testing"
 )
 
@@ -267,8 +265,8 @@ func TestTransmissionContainerEncode(t *testing.T) {
 				return
 			}
 
-			str := strings.ToUpper(string(raw))
-			expected := strings.ToUpper(testCase.ExpectedServerRequest)
+			str := string(raw)
+			expected := testCase.ExpectedServerRequest
 			if str != expected {
 				test.Logf("Expected value: %v, Actual value: %v", expected, str)
 				test.Fail()
@@ -355,6 +353,32 @@ func TestTransmissionContainerDecode(t *testing.T) {
 				},
 				TransmissionContainerPost: TransmissionContainerPost{
 					Checksum: 0x6C,
+				},
+			},
+		},
+		{
+			//  From my Own Device
+			Name:         "Ping 4 Response",
+			EncodedInput: "5410EC8528BB00000000000600090100000000808A7E",
+			ExpectedDecodedInput: TransmissionContainer{
+				TransmissionContainerPre: TransmissionContainerPre{
+					SrcMac:     [6]byte{0x54, 0x10, 0xEC, 0x85, 0x28, 0xBB},
+					DstMac:     [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x06},
+					BodyLength: 9,
+				},
+				Packet: Packet{
+					PacketPre: PacketPre{
+						TAG:       1,
+						Token:     uint32(0x00000000),
+						CommandID: COMMANDID_PING_RESPONSE,
+					},
+					payload: payload.EmptyPayload(),
+					PacketPost: PacketPost{
+						Checksum: 0x8A,
+					},
+				},
+				TransmissionContainerPost: TransmissionContainerPost{
+					Checksum: 0x7E,
 				},
 			},
 		},
@@ -561,16 +585,9 @@ func TestTransmissionContainerDecode(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.Name, func(test *testing.T) {
-			encodedInput := testCase.EncodedInput
-			encodedInputBytes, err := hex.DecodeString(encodedInput)
-			if err != nil {
-				test.Logf("Failed to decode test data. %v", err)
-				test.Fail()
-				return
-			}
-
+			encodedInputBytes := []byte(testCase.EncodedInput)
 			encodedInputBuffer := new(bytes.Buffer)
-			_, err = encodedInputBuffer.Write(encodedInputBytes)
+			_, err := encodedInputBuffer.Write(encodedInputBytes)
 			if err != nil {
 				test.Logf("Failed to write test data into buffer. %v", err)
 				test.Fail()
@@ -586,10 +603,11 @@ func TestTransmissionContainerDecode(t *testing.T) {
 
 			expected := &testCase.ExpectedDecodedInput
 			if decoded == nil || !expected.Equal(decoded) {
-				test.Logf("Expected value: 0x%X, Actual value: 0x%X", expected, decoded)
+				test.Logf("Expected value: %s\nActual value: %s", expected, decoded)
 				test.Fail()
+			} else {
+				test.Logf("Decoded transmission container: %v", decoded)
 			}
-			test.Logf("Decoded transmission container: %v", decoded)
 		})
 	}
 }
