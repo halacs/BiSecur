@@ -581,6 +581,32 @@ func TestTransmissionContainerDecode(t *testing.T) {
 				},
 			},
 		},
+		{
+			// 5410EC8528BB 000000000006 000F 01 00000000 825410EC8528BB 4A 36
+			Name:         "Get Mac Response",
+			EncodedInput: "5410EC8528BB000000000006000F0100000000825410EC8528BB4A36",
+			ExpectedDecodedInput: TransmissionContainer{
+				TransmissionContainerPre: TransmissionContainerPre{
+					SrcMac:     [6]byte{0x54, 0x10, 0xEC, 0x85, 0x28, 0xBB},
+					DstMac:     [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x06},
+					BodyLength: 0x0F,
+				},
+				Packet: Packet{
+					PacketPre: PacketPre{
+						TAG:       0x01,
+						Token:     uint32(0x00000000),
+						CommandID: COMMANDID_GET_MAC_RESPONSE,
+					},
+					payload: payload.GetMacResponsePayload([6]byte{0x54, 0x10, 0xEC, 0x85, 0x28, 0xBB}),
+					PacketPost: PacketPost{
+						Checksum: 0x4A,
+					},
+				},
+				TransmissionContainerPost: TransmissionContainerPost{
+					Checksum: 0x36,
+				},
+			},
+		},
 	}
 
 	for _, testCase := range testCases {

@@ -10,7 +10,7 @@ type Login struct {
 	password string
 }
 
-func DecodeLoginPacket(payloadBytes []byte) (PayloadInterface, error) {
+func DecodeLoginPayload(payloadBytes []byte) (PayloadInterface, error) {
 	usernameLength := payloadBytes[0]
 
 	firstPasswordCharIndex := usernameLength + 1

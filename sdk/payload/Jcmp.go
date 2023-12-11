@@ -22,7 +22,7 @@ func (j *Jcmp) Encode() []byte {
 	return []byte(data)
 }
 
-func DecodeJcmpPacket(payloadBytes []byte) (PayloadInterface, error) {
+func DecodeJcmpPayload(payloadBytes []byte) (PayloadInterface, error) {
 	return &Jcmp{
 		Payload{
 			data: payloadBytes, // json request/response

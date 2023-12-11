@@ -23,7 +23,7 @@ type HmGetTransitionResponse struct {
 	//IgnoreRetries         bool
 }
 
-func DecodeHmGetTransitionResponsePacket(payloadBytes []byte) (PayloadInterface, error) {
+func DecodeHmGetTransitionResponsePayload(payloadBytes []byte) (PayloadInterface, error) {
 	hcpPayloadBytes := payloadBytes[6:8]
 	h := hcp.DecodeHcp(hcpPayloadBytes)
 

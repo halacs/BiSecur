@@ -13,7 +13,7 @@ type LoginResponse struct {
 	token    uint32
 }
 
-func DecodeLoginResponsePacket(payloadBytes []byte) (PayloadInterface, error) {
+func DecodeLoginResponsePayload(payloadBytes []byte) (PayloadInterface, error) {
 	id := payloadBytes[0]
 	token := binary.BigEndian.Uint32(payloadBytes[1:])
 

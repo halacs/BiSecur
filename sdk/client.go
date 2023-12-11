@@ -9,27 +9,27 @@ import (
 )
 
 type Client struct {
-	destinatonMacAddress [6]byte
-	sourceMacAddress     [6]byte
-	host                 string
-	port                 int
-	username             string
-	password             string
-	tag                  byte
-	token                uint32
-	connection           *net.TCPConn
+	destinationMacAddress [6]byte
+	sourceMacAddress      [6]byte
+	host                  string
+	port                  int
+	username              string
+	password              string
+	tag                   byte
+	token                 uint32
+	connection            *net.TCPConn
 }
 
 func NewClient(sourceMacAddress [6]byte, destinationMacAddress [6]byte, host string, port int, username string, password string) *Client {
 	return &Client{
-		sourceMacAddress:     sourceMacAddress,
-		destinatonMacAddress: destinationMacAddress,
-		host:                 host,
-		port:                 port,
-		username:             username,
-		password:             password,
-		tag:                  1,
-		token:                0,
+		sourceMacAddress:      sourceMacAddress,
+		destinationMacAddress: destinationMacAddress,
+		host:                  host,
+		port:                  port,
+		username:              username,
+		password:              password,
+		tag:                   1,
+		token:                 0,
 	}
 }
 
@@ -40,7 +40,7 @@ func (c *Client) getTransmissionContainer(commandID byte, payload payload.Payloa
 	tc := TransmissionContainer{
 		TransmissionContainerPre: TransmissionContainerPre{
 			SrcMac: c.sourceMacAddress,
-			DstMac: c.destinatonMacAddress,
+			DstMac: c.destinationMacAddress,
 		},
 		Packet: Packet{
 			PacketPre: PacketPre{
@@ -87,6 +87,8 @@ func (c *Client) transmitCommand(requestTc *TransmissionContainer) (*Transmissio
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode transmission container. %v", err)
 	}
+
+	fmt.Printf("%v\n", receivedTc)
 
 	return receivedTc, err
 }
@@ -150,18 +152,12 @@ func (c *Client) Ping(count int) error {
 			return fmt.Errorf("unexpected nil responseTc value")
 		}
 
-		fmt.Printf("responseTC: %v\n", responseTc)
-
-		if requestTc.Packet.TAG == responseTc.Packet.TAG &&
-			responseTc.isResponse() &&
-			responseTc.Packet.getCommandID() == COMMANDID_PING {
-			received = received + 1
-			fmt.Printf("received: %d\n", received)
-		} else {
+		if !(requestTc.Packet.TAG == responseTc.Packet.TAG && responseTc.isResponse() && responseTc.Packet.getCommandID() == COMMANDID_PING) {
 			return fmt.Errorf("received unexpected packet: %s", responseTc)
 		}
 
-		fmt.Printf("%v\n", responseTc)
+		received = received + 1
+		fmt.Printf("received %d packet(s)\n", received)
 
 		if i < count {
 			time.Sleep(time.Second * 2)
@@ -194,13 +190,18 @@ func (c *Client) GetMac() ([6]byte, error) {
 		return deviceMac, fmt.Errorf("unexpected nil response value")
 	}
 
-	if tc.Packet.TAG == response.Packet.TAG && response.Packet.getCommandID() == COMMANDID_PING_RESPONSE {
-		fmt.Printf("Response: %v\n", response)
-	} else {
+	if !(tc.Packet.TAG == response.Packet.TAG && response.Packet.getCommandID() == COMMANDID_GET_MAC) {
 		return deviceMac, fmt.Errorf("received unexpected packet: %s", response)
 	}
 
+	getMacResponsePayload := response.Packet.payload.(*payload.GetMac)
+	deviceMac = getMacResponsePayload.GetMac()
+
 	return deviceMac, nil
+}
+
+func (c *Client) GetName() error {
+	return nil
 }
 
 func (c *Client) Login() error {
@@ -208,10 +209,6 @@ func (c *Client) Login() error {
 }
 
 func (c *Client) Logout() error {
-	return nil
-}
-
-func (c *Client) GetName() error {
 	return nil
 }
 

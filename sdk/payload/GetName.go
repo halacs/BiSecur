@@ -1,5 +1,7 @@
 package payload
 
+import "fmt"
+
 type GetName struct {
 	Payload
 }
@@ -13,5 +15,5 @@ func GetNamePayload() PayloadInterface {
 }
 
 func (gn *GetName) String() string {
-	return "GetName"
+	return fmt.Sprintf("GetName: %s", gn.data)
 }

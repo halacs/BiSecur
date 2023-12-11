@@ -29,7 +29,7 @@ type Error struct {
 	Payload
 }
 
-func DecodeErrorPacket(payloadBytes []byte) (PayloadInterface, error) {
+func DecodeErrorPayload(payloadBytes []byte) (PayloadInterface, error) {
 	return &Error{
 		Payload{
 			data: payloadBytes, // error code

@@ -25,13 +25,39 @@ func init() {
 	host = os.Getenv("host")
 
 	var err error
-	port, err = strconv.Atoi(os.Getenv("port"))
+	portStr := os.Getenv("port")
+	port, err = strconv.Atoi(portStr)
 	if err != nil {
 		panic(err)
 	}
 
 	username = os.Getenv("username")
 	password = os.Getenv("password")
+}
+
+func TestGetMacOnRealGateway(t *testing.T) {
+	client := NewClient(sourceMacAddress, destinationMacAddress, host, port, username, password)
+	err := client.Open()
+	if err != nil {
+		t.Logf("%v", err)
+		t.Fail()
+	}
+
+	defer func() {
+		err2 := client.Close()
+		if err2 != nil {
+			t.Logf("%v", err2)
+			t.Fail()
+		}
+	}()
+
+	mac, err := client.GetMac()
+	if err != nil {
+		t.Logf("%v", err)
+		t.Fail()
+	}
+
+	t.Logf("Received MAC address: %X", mac)
 }
 
 func TestPingOnRealGateway(t *testing.T) {

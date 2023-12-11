@@ -64,31 +64,37 @@ func DecodePacket(packetLength uint16, buffer *bytes.Buffer) (*Packet, error) {
 	commandID := p.CommandID //& 0x7F
 	switch commandID {
 	case COMMANDID_LOGIN:
-		pl, err2 := payload.DecodeLoginPacket(payloadBytes)
+		pl, err2 := payload.DecodeLoginPayload(payloadBytes)
 		if err2 != nil {
 			return nil, err2
 		}
 		p.payload = pl
 	case COMMANDID_LOGIN_RESPONSE:
-		pl, err2 := payload.DecodeLoginResponsePacket(payloadBytes)
+		pl, err2 := payload.DecodeLoginResponsePayload(payloadBytes)
+		if err2 != nil {
+			return nil, err2
+		}
+		p.payload = pl
+	case COMMANDID_GET_MAC_RESPONSE:
+		pl, err2 := payload.DecodeGetMacResponsePayload(payloadBytes)
 		if err2 != nil {
 			return nil, err2
 		}
 		p.payload = pl
 	case COMMANDID_ERROR:
-		pl, err2 := payload.DecodeErrorPacket(payloadBytes)
+		pl, err2 := payload.DecodeErrorPayload(payloadBytes)
 		if err2 != nil {
 			return nil, err2
 		}
 		p.payload = pl
 	case COMMANDID_JMCP_RESPONSE:
-		pl, err2 := payload.DecodeJcmpPacket(payloadBytes)
+		pl, err2 := payload.DecodeJcmpPayload(payloadBytes)
 		if err2 != nil {
 			return nil, err2
 		}
 		p.payload = pl
 	case COMMANDID_HM_GET_TRANSITION_RESPONSE:
-		pl, err2 := payload.DecodeHmGetTransitionResponsePacket(payloadBytes)
+		pl, err2 := payload.DecodeHmGetTransitionResponsePayload(payloadBytes)
 		if err2 != nil {
 			return nil, err2
 		}

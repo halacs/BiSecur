@@ -81,7 +81,7 @@ func TestTransmissionContainerDecode(t *testing.T) {
 				return
 			}
 
-			decoded, err := DecodeHmGetTransitionResponsePacket(encodedInputBytes)
+			decoded, err := DecodeHmGetTransitionResponsePayload(encodedInputBytes)
 			if err != nil {
 				test.Logf("Failed to decode request. %v", err)
 				test.Fail()
