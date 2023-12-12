@@ -60,6 +60,31 @@ func TestGetMacOnRealGateway(t *testing.T) {
 	t.Logf("Received MAC address: %X", mac)
 }
 
+func TestGetNameOnRealGateway(t *testing.T) {
+	client := NewClient(sourceMacAddress, destinationMacAddress, host, port, username, password)
+	err := client.Open()
+	if err != nil {
+		t.Logf("%v", err)
+		t.Fail()
+	}
+
+	defer func() {
+		err2 := client.Close()
+		if err2 != nil {
+			t.Logf("%v", err2)
+			t.Fail()
+		}
+	}()
+
+	name, err := client.GetName()
+	if err != nil {
+		t.Logf("%v", err)
+		t.Fail()
+	}
+
+	t.Logf("Received name: %s", name)
+}
+
 func TestPingOnRealGateway(t *testing.T) {
 	client := NewClient(sourceMacAddress, destinationMacAddress, host, port, username, password)
 	err := client.Open()

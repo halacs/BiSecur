@@ -36,7 +36,7 @@ func (p *PacketPre) isResponse() bool {
 }
 
 // Gives back the command ID after clearing
-// the most significant bit set in case of a response only
+// the most significant bit set in case of a response
 func (p *PacketPre) getCommandID() uint8 {
 	return p.CommandID & (RESPONSE_MASK ^ 0xFF)
 }
@@ -61,7 +61,7 @@ func DecodePacket(packetLength uint16, buffer *bytes.Buffer) (*Packet, error) {
 	}
 
 	// Let's decode packet payload according to Command ID
-	commandID := p.CommandID //& 0x7F
+	commandID := p.CommandID
 	switch commandID {
 	case COMMANDID_LOGIN:
 		pl, err2 := payload.DecodeLoginPayload(payloadBytes)
@@ -77,6 +77,12 @@ func DecodePacket(packetLength uint16, buffer *bytes.Buffer) (*Packet, error) {
 		p.payload = pl
 	case COMMANDID_GET_MAC_RESPONSE:
 		pl, err2 := payload.DecodeGetMacResponsePayload(payloadBytes)
+		if err2 != nil {
+			return nil, err2
+		}
+		p.payload = pl
+	case COMMANDID_GET_NAME_RESPONSE:
+		pl, err2 := payload.DecodeGetNameResponsePayload(payloadBytes)
 		if err2 != nil {
 			return nil, err2
 		}

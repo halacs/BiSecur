@@ -1,6 +1,8 @@
 package payload
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type GetName struct {
 	Payload

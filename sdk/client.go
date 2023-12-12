@@ -152,7 +152,7 @@ func (c *Client) Ping(count int) error {
 			return fmt.Errorf("unexpected nil responseTc value")
 		}
 
-		if !(requestTc.Packet.TAG == responseTc.Packet.TAG && responseTc.isResponse() && responseTc.Packet.getCommandID() == COMMANDID_PING) {
+		if !responseTc.isResponseFor(requestTc) {
 			return fmt.Errorf("received unexpected packet: %s", responseTc)
 		}
 
@@ -172,11 +172,11 @@ func (c *Client) Ping(count int) error {
 	return nil
 }
 
-/*
-"Side Note: GET_MAC is used as a keepalive, every 30 seconds the device receives a GET_MAC message."
-Source: https://sec-consult.com/blog/detail/hoermann-opening-doors-for-everyone/
-*/
 func (c *Client) GetMac() ([6]byte, error) {
+	/*
+		"Side Note: GET_MAC is used as a keepalive, every 30 seconds the device receives a GET_MAC message."
+		Source: https://sec-consult.com/blog/detail/hoermann-opening-doors-for-everyone/
+	*/
 
 	deviceMac := [6]byte{0, 0, 0, 0, 0, 0}
 
@@ -190,7 +190,7 @@ func (c *Client) GetMac() ([6]byte, error) {
 		return deviceMac, fmt.Errorf("unexpected nil response value")
 	}
 
-	if !(tc.Packet.TAG == response.Packet.TAG && response.Packet.getCommandID() == COMMANDID_GET_MAC) {
+	if !response.isResponseFor(tc) {
 		return deviceMac, fmt.Errorf("received unexpected packet: %s", response)
 	}
 
@@ -200,8 +200,24 @@ func (c *Client) GetMac() ([6]byte, error) {
 	return deviceMac, nil
 }
 
-func (c *Client) GetName() error {
-	return nil
+func (c *Client) GetName() (string, error) {
+	tc := c.getTransmissionContainer(COMMANDID_GET_NAME, payload.EmptyPayload())
+	response, err := c.transmitCommand(tc)
+	if err != nil {
+		return "", fmt.Errorf("failed to encode packet. %v", err)
+	}
+
+	if response == nil {
+		return "", fmt.Errorf("unexpected nil response value")
+	}
+
+	if !response.isResponseFor(tc) {
+		return "", fmt.Errorf("received unexpected packet: %s", response)
+	}
+
+	getMacResponsePayload := response.Packet.payload.(*payload.GetNameResponse)
+	name := getMacResponsePayload.GetName()
+	return name, nil
 }
 
 func (c *Client) Login() error {

@@ -160,6 +160,11 @@ func (tc *TransmissionContainer) isResponse() bool {
 	return (tc.Packet.CommandID & RESPONSE_MASK) == RESPONSE_MASK
 }
 
+func (tc *TransmissionContainer) isResponseFor(o *TransmissionContainer) bool {
+	response := tc
+	return response.Packet.TAG == o.Packet.TAG && response.Packet.getCommandID() == o.Packet.getCommandID() && response.isResponse()
+}
+
 func (tc *TransmissionContainer) getChecksum() (byte, error) {
 	payloadHexBytes, err := tc.Packet.EncodeToHexString()
 	if err != nil {

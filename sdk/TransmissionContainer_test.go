@@ -607,6 +607,31 @@ func TestTransmissionContainerDecode(t *testing.T) {
 				},
 			},
 		},
+		{ // 5410EC8528BB 000000000006 0018 01 00000000 A6 426953656375722047617465776179 5E C3
+			Name:         "Get Name Response",
+			EncodedInput: "5410EC8528BB00000000000600180100000000A64269536563757220476174657761795EC3",
+			ExpectedDecodedInput: TransmissionContainer{
+				TransmissionContainerPre: TransmissionContainerPre{
+					SrcMac:     [6]byte{0x54, 0x10, 0xEC, 0x85, 0x28, 0xBB},
+					DstMac:     [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x06},
+					BodyLength: 0x18,
+				},
+				Packet: Packet{
+					PacketPre: PacketPre{
+						TAG:       0x01,
+						Token:     uint32(0x00000000),
+						CommandID: COMMANDID_GET_NAME_RESPONSE,
+					},
+					payload: payload.GetNameResponsePayload("BiSecur Gateway"),
+					PacketPost: PacketPost{
+						Checksum: 0x5E,
+					},
+				},
+				TransmissionContainerPost: TransmissionContainerPost{
+					Checksum: 0xC3,
+				},
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
