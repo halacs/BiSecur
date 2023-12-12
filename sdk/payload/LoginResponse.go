@@ -9,7 +9,7 @@ import (
 
 type LoginResponse struct {
 	Payload
-	senderID byte
+	senderID byte // TODO what is the purpose of this field?
 	token    uint32
 }
 
@@ -61,4 +61,12 @@ func LoginResponsePayload(senderID byte, token uint32) PayloadInterface {
 
 func (l *LoginResponse) String() string {
 	return fmt.Sprintf("SenderID: 0x%X, Token: 0x%X", l.senderID, l.token)
+}
+
+func (l *LoginResponse) GetToken() uint32 {
+	return l.token
+}
+
+func (l *LoginResponse) GetSenderID() byte {
+	return l.senderID
 }

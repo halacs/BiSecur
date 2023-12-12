@@ -36,7 +36,7 @@ func init() {
 }
 
 func TestGetMacOnRealGateway(t *testing.T) {
-	client := NewClient(sourceMacAddress, destinationMacAddress, host, port, username, password)
+	client := NewClient(sourceMacAddress, destinationMacAddress, host, port)
 	err := client.Open()
 	if err != nil {
 		t.Logf("%v", err)
@@ -61,7 +61,7 @@ func TestGetMacOnRealGateway(t *testing.T) {
 }
 
 func TestGetNameOnRealGateway(t *testing.T) {
-	client := NewClient(sourceMacAddress, destinationMacAddress, host, port, username, password)
+	client := NewClient(sourceMacAddress, destinationMacAddress, host, port)
 	err := client.Open()
 	if err != nil {
 		t.Logf("%v", err)
@@ -86,7 +86,7 @@ func TestGetNameOnRealGateway(t *testing.T) {
 }
 
 func TestPingOnRealGateway(t *testing.T) {
-	client := NewClient(sourceMacAddress, destinationMacAddress, host, port, username, password)
+	client := NewClient(sourceMacAddress, destinationMacAddress, host, port)
 	err := client.Open()
 	if err != nil {
 		t.Logf("%v", err)
@@ -106,6 +106,31 @@ func TestPingOnRealGateway(t *testing.T) {
 		t.Logf("%v", err)
 		t.Fail()
 	}
+}
+
+func TestLoginOnRealGateway(t *testing.T) {
+	client := NewClient(sourceMacAddress, destinationMacAddress, host, port)
+	err := client.Open()
+	if err != nil {
+		t.Logf("%v", err)
+		t.Fail()
+	}
+
+	defer func() {
+		err2 := client.Close()
+		if err2 != nil {
+			t.Logf("%v", err2)
+			t.Fail()
+		}
+	}()
+
+	err = client.Login(username, password)
+	if err != nil {
+		t.Logf("%v", err)
+		t.Fail()
+	}
+
+	t.Logf("client: %+v", client)
 }
 
 func TestDiscoveryOnRealGateway(t *testing.T) {

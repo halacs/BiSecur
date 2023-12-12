@@ -13,23 +13,21 @@ type Client struct {
 	sourceMacAddress      [6]byte
 	host                  string
 	port                  int
-	username              string
-	password              string
 	tag                   byte
 	token                 uint32
+	senderID              byte
 	connection            *net.TCPConn
 }
 
-func NewClient(sourceMacAddress [6]byte, destinationMacAddress [6]byte, host string, port int, username string, password string) *Client {
+func NewClient(sourceMacAddress [6]byte, destinationMacAddress [6]byte, host string, port int) *Client {
 	return &Client{
 		sourceMacAddress:      sourceMacAddress,
 		destinationMacAddress: destinationMacAddress,
 		host:                  host,
 		port:                  port,
-		username:              username,
-		password:              password,
 		tag:                   1,
 		token:                 0,
+		senderID:              0,
 	}
 }
 
@@ -96,14 +94,6 @@ func (c *Client) transmitCommand(requestTc *TransmissionContainer) (*Transmissio
 func (c *Client) Open() error {
 	if len(c.host) == 0 {
 		return fmt.Errorf("'host' value cannot be empty")
-	}
-
-	if len(c.username) == 0 {
-		return fmt.Errorf("'username' value cannot be empty")
-	}
-
-	if len(c.password) == 0 {
-		return fmt.Errorf("'password' value cannot be empty")
 	}
 
 	servAddr := fmt.Sprintf("%s:%d", c.host, c.port)
@@ -220,7 +210,33 @@ func (c *Client) GetName() (string, error) {
 	return name, nil
 }
 
-func (c *Client) Login() error {
+func (c *Client) Login(username string, password string) error {
+	if len(username) == 0 {
+		return fmt.Errorf("'username' value cannot be empty")
+	}
+
+	if len(password) == 0 {
+		return fmt.Errorf("'password' value cannot be empty")
+	}
+
+	tc := c.getTransmissionContainer(COMMANDID_LOGIN, payload.LoginPayload(username, password))
+	response, err := c.transmitCommand(tc)
+	if err != nil {
+		return fmt.Errorf("failed to encode packet. %v", err)
+	}
+
+	if response == nil {
+		return fmt.Errorf("unexpected nil response value")
+	}
+
+	if !response.isResponseFor(tc) {
+		return fmt.Errorf("received unexpected packet: %s", response)
+	}
+
+	loginResponse := response.Packet.payload.(*payload.LoginResponse)
+	c.token = loginResponse.GetToken()
+	c.senderID = loginResponse.GetSenderID()
+
 	return nil
 }
 
