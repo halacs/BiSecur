@@ -210,6 +210,30 @@ func (c *Client) GetName() (string, error) {
 	return name, nil
 }
 
+func (c *Client) GetGroups() (*Groups, error) {
+	tc := c.getTransmissionContainer(COMMANDID_JMCP, payload.JcmpPayload("{\"CMD\":\"GET_GROUPS\"}"))
+	response, err := c.transmitCommand(tc)
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode packet. %v", err)
+	}
+
+	if response == nil {
+		return nil, fmt.Errorf("unexpected nil response value")
+	}
+
+	if !response.isResponseFor(tc) {
+		return nil, fmt.Errorf("received unexpected packet: %s", response)
+	}
+
+	responsePayload := string(response.Packet.payload.ToByteArray())
+	groups, err := DecodeGroups(responsePayload)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal groups object. %v", err)
+	}
+
+	return &groups, nil
+}
+
 func (c *Client) Login(username string, password string) error {
 	if len(username) == 0 {
 		return fmt.Errorf("'username' value cannot be empty")
@@ -249,5 +273,17 @@ func (c *Client) SetState() error {
 }
 
 func (c *Client) GetTransition() error {
+	return nil
+}
+
+func (c *Client) AddUser(username string, password string) error {
+	return nil
+}
+
+func (c *Client) DeleteUser(username string) error {
+	return nil
+}
+
+func (c *Client) PasswordChange(username string, newPassword string) error {
 	return nil
 }
