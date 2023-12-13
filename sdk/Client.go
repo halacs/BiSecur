@@ -234,6 +234,30 @@ func (c *Client) GetGroups() (*Groups, error) {
 	return &groups, nil
 }
 
+func (c *Client) GetUsers() (*Users, error) {
+	tc := c.getTransmissionContainer(COMMANDID_JMCP, payload.JcmpPayload("{\"CMD\":\"GET_USERS\"}"))
+	response, err := c.transmitCommand(tc)
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode packet. %v", err)
+	}
+
+	if response == nil {
+		return nil, fmt.Errorf("unexpected nil response value")
+	}
+
+	if !response.isResponseFor(tc) {
+		return nil, fmt.Errorf("received unexpected packet: %s", response)
+	}
+
+	responsePayload := string(response.Packet.payload.ToByteArray())
+	users, err := DecodeUsers(responsePayload)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal groups object. %v", err)
+	}
+
+	return &users, nil
+}
+
 func (c *Client) Login(username string, password string) error {
 	if len(username) == 0 {
 		return fmt.Errorf("'username' value cannot be empty")

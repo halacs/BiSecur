@@ -27,7 +27,7 @@ func DecodeGroups(jsonStr string) (Groups, error) {
 }
 
 func (g *Group) String() string {
-	return fmt.Sprintf("ID=%d Name=%s Ports=[%s]", g.ID, g.Name, g.Ports.toString())
+	return fmt.Sprintf("ID=%d Name=\"%s\" Ports=[%s]", g.ID, g.Name, g.Ports.toString())
 }
 
 func (groups Groups) toString() string {

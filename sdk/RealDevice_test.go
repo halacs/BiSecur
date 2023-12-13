@@ -110,6 +110,31 @@ func TestGetGroupsOnRealGateway(t *testing.T) {
 	t.Logf("Received groups: %s", groups.toString())
 }
 
+func TestGetUsersOnRealGateway(t *testing.T) {
+	client := NewClient(sourceMacAddress, destinationMacAddress, host, port)
+	err := client.Open()
+	if err != nil {
+		t.Logf("%v", err)
+		t.Fail()
+	}
+
+	defer func() {
+		err2 := client.Close()
+		if err2 != nil {
+			t.Logf("%v", err2)
+			t.Fail()
+		}
+	}()
+
+	users, err := client.GetUsers()
+	if err != nil {
+		t.Logf("%v", err)
+		t.Fail()
+	}
+
+	t.Logf("Received users: %s", users.toString())
+}
+
 func TestPingOnRealGateway(t *testing.T) {
 	client := NewClient(sourceMacAddress, destinationMacAddress, host, port)
 	err := client.Open()
