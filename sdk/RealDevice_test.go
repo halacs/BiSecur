@@ -135,6 +135,31 @@ func TestGetUsersOnRealGateway(t *testing.T) {
 	t.Logf("Received users: %s", users.toString())
 }
 
+func TestGetValuesOnRealGateway(t *testing.T) {
+	client := NewClient(sourceMacAddress, destinationMacAddress, host, port)
+	err := client.Open()
+	if err != nil {
+		t.Logf("%v", err)
+		t.Fail()
+	}
+
+	defer func() {
+		err2 := client.Close()
+		if err2 != nil {
+			t.Logf("%v", err2)
+			t.Fail()
+		}
+	}()
+
+	values, err := client.GetValues()
+	if err != nil {
+		t.Logf("%v", err)
+		t.Fail()
+	}
+
+	t.Logf("Received values: %v", values)
+}
+
 func TestPingOnRealGateway(t *testing.T) {
 	client := NewClient(sourceMacAddress, destinationMacAddress, host, port)
 	err := client.Open()
