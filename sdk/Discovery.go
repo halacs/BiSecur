@@ -43,12 +43,13 @@ func NewDiscovery(ctx context.Context, callbackFunc func(gateway Gateway)) *Disc
 	}
 }
 
-func (d *Discovery) sendDiscoveryPacket(broadcastConn *net.UDPConn) {
+func (d *Discovery) sendDiscoveryPacket(broadcastConn *net.UDPConn) error {
 	_, err := broadcastConn.Write([]byte(dicoverGatewayPacket))
 	if err != nil {
-		fmt.Errorf("failed to send discovery packet. %v", err)
+		return fmt.Errorf("failed to send discovery packet. %v", err)
 	}
 	fmt.Println("Packet sent")
+	return nil
 }
 
 func (d *Discovery) sendingPackets() {
@@ -61,29 +62,35 @@ func (d *Discovery) sendingPackets() {
 
 		broadcastAddr, err := net.ResolveUDPAddr("udp", "255.255.255.255:4001")
 		if err != nil {
-			fmt.Errorf("failed to resolve UDP address. %v", err)
+			fmt.Printf("failed to resolve UDP address. %v\n", err)
 			return
 		}
 
 		broadcastConn, err := net.DialUDP("udp", nil, broadcastAddr)
 		if err != nil {
-			fmt.Errorf("failed to open connection. %v", err)
+			fmt.Printf("failed to open connection. %v\n", err)
 			return
 		}
 
 		defer func() {
 			err := broadcastConn.Close()
-			fmt.Errorf("failed to close connection. %v", err)
+			fmt.Printf("failed to close connection. %v\n", err)
 		}()
 
-		d.sendDiscoveryPacket(broadcastConn)
+		err = d.sendDiscoveryPacket(broadcastConn)
+		if err != nil {
+			fmt.Printf("failed to send discovery packet. %v\n", err)
+		}
 
 		for {
 			select {
 			case <-d.ctx.Done():
 				return
 			case <-ticker.C:
-				d.sendDiscoveryPacket(broadcastConn)
+				err := d.sendDiscoveryPacket(broadcastConn)
+				if err != nil {
+					fmt.Printf("failed to send discovery packet. %v\n", err)
+				}
 			}
 		}
 	}()
@@ -97,11 +104,11 @@ func (d *Discovery) receivingPackets() {
 
 		connection, err := net.ListenPacket("udp", ":4002")
 		if err != nil {
-			fmt.Errorf("failed to open listening socket. %v", err)
+			fmt.Printf("failed to open listening socket. %v\n", err)
 		}
 		defer func() {
 			err := connection.Close()
-			fmt.Errorf("failed to close network connection. %v", err)
+			fmt.Printf("failed to close network connection. %v\n", err)
 		}()
 
 		for {
@@ -129,7 +136,7 @@ func (d *Discovery) receivingPackets() {
 
 				err = xml.Unmarshal(data, &found)
 				if err != nil {
-					fmt.Errorf("failed to unmarshall received xml content. %v", err)
+					fmt.Printf("failed to unmarshall received xml content. %v\n", err)
 				}
 
 				key := fmt.Sprintf("%s%d", found.IpAddress, found.Port)

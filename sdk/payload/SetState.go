@@ -6,10 +6,11 @@ type SetState struct {
 	Payload
 }
 
-func SetStatePayload() PayloadInterface {
+func SetStatePayload(portID byte) PayloadInterface {
+	var state byte = 0xFF // it seems this is always the same
 	return &SetState{
 		Payload{
-			data: []byte{0x00, 0xFF}, // it seems this is always the same
+			data: []byte{portID, state},
 		},
 	}
 }

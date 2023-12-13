@@ -13,19 +13,19 @@ func TestUserDecode(t *testing.T) {
 	}{
 		{
 			Name:      "Two users available",
-			JsonInput: "[{\"id\":0,\"name\":\"admin\",\"isAdmin\":true,\"groups\":[]},{\"id\":1,\"name\":\"app\",\"isAdmin\":false,\"groups\":[0]}]",
+			JsonInput: "[{\"id\":0,\"name\":\"admin\",\"isAdmin\":true,\"Groups\":[]},{\"id\":1,\"name\":\"app\",\"isAdmin\":false,\"Groups\":[0]}]",
 			ExpectedObject: Users{
 				User{
 					ID:      0,
 					Name:    "admin",
 					IsAdmin: true,
-					groups:  nil,
+					Groups:  []int{},
 				},
 				User{
 					ID:      1,
 					Name:    "app",
 					IsAdmin: false,
-					groups:  nil,
+					Groups:  []int{0},
 				},
 			},
 		},

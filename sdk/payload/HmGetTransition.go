@@ -6,10 +6,10 @@ type HmGetTransition struct {
 	Payload
 }
 
-func HmGetTransitionPayload(data byte) PayloadInterface { // TODO change name of data variable to something more meaningful
+func HmGetTransitionPayload(portID byte) PayloadInterface {
 	return &HmGetTransition{
 		Payload{
-			data: []byte{data},
+			data: []byte{portID},
 		},
 	}
 }

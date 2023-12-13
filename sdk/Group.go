@@ -30,7 +30,7 @@ func (g *Group) String() string {
 	return fmt.Sprintf("ID=%d Name=\"%s\" Ports=[%s]", g.ID, g.Name, g.Ports.toString())
 }
 
-func (groups Groups) toString() string {
+func (groups Groups) String() string {
 	s := ""
 	for _, g := range groups {
 		s = s + g.String()

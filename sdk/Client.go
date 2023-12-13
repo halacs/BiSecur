@@ -55,7 +55,16 @@ func (c *Client) getTransmissionContainer(commandID byte, payload payload.Payloa
 	return &tc
 }
 
-func (c *Client) transmitCommand(requestTc *TransmissionContainer) (*TransmissionContainer, error) {
+func (c *Client) transmitCommandWithResponse(requestTc *TransmissionContainer) (*TransmissionContainer, error) {
+	return c.transmitCommand(requestTc, true)
+}
+
+func (c *Client) transmitCommandWithNoResponse(requestTc *TransmissionContainer) error {
+	_, err := c.transmitCommand(requestTc, false)
+	return err
+}
+
+func (c *Client) transmitCommand(requestTc *TransmissionContainer, expectResponse bool) (*TransmissionContainer, error) {
 	requestBytes, err := requestTc.Encode()
 	if err != nil {
 		return nil, fmt.Errorf("failed to encode packet. %v", err)
@@ -66,28 +75,34 @@ func (c *Client) transmitCommand(requestTc *TransmissionContainer) (*Transmissio
 		return nil, fmt.Errorf("failed to write into network stream. %v", err)
 	}
 
-	receivedBytesTmp := make([]byte, 10240)
-	c.connection.SetReadDeadline(time.Now().Add(time.Second * 5))
-	size, err := c.connection.Read(receivedBytesTmp)
-	receivedHexString := string(receivedBytesTmp[0:size])
-	fmt.Printf("Received bytes: %d\nResponse bytes: %s\n", size, receivedHexString)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read network stream. %v", err)
+	var receivedTc *TransmissionContainer
+
+	if expectResponse {
+		receivedBytesTmp := make([]byte, 10240)
+		err := c.connection.SetReadDeadline(time.Now().Add(time.Second * 5))
+		if err != nil {
+			return nil, fmt.Errorf("failed to set read deadline. %v", err)
+		}
+		size, err := c.connection.Read(receivedBytesTmp)
+		receivedHexString := string(receivedBytesTmp[0:size])
+		fmt.Printf("Received bytes: %d\nResponse bytes: %s\n", size, receivedHexString)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read network stream. %v", err)
+		}
+
+		buffer := new(bytes.Buffer)
+		_, err = buffer.Write(receivedBytesTmp[0:size])
+		if err != nil {
+			return nil, fmt.Errorf("failed to write into buffer. %v", err)
+		}
+
+		receivedTc, err = DecodeTransmissionContainer(buffer)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decode transmission container. %v", err)
+		}
+
+		fmt.Printf("Received TC: %v\n", receivedTc)
 	}
-
-	buffer := new(bytes.Buffer)
-	_, err = buffer.Write(receivedBytesTmp[0:size])
-	if err != nil {
-		return nil, fmt.Errorf("failed to write into buffer. %v", err)
-	}
-
-	receivedTc, err := DecodeTransmissionContainer(buffer)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode transmission container. %v", err)
-	}
-
-	fmt.Printf("%v\n", receivedTc)
-
 	return receivedTc, err
 }
 
@@ -123,7 +138,7 @@ func (c *Client) Close() error {
 	return err
 }
 
-func (c *Client) isOpened() bool {
+func (c *Client) IsOpened() bool {
 	return c.connection != nil
 }
 
@@ -133,7 +148,7 @@ func (c *Client) Ping(count int) error {
 	for i := 0; i < count; i++ {
 		requestTc := c.getTransmissionContainer(COMMANDID_PING, payload.EmptyPayload())
 		fmt.Printf("requestTC: %v\n", requestTc)
-		responseTc, err := c.transmitCommand(requestTc)
+		responseTc, err := c.transmitCommandWithResponse(requestTc)
 		if err != nil {
 			return fmt.Errorf("%v", err)
 		}
@@ -171,7 +186,7 @@ func (c *Client) GetMac() ([6]byte, error) {
 	deviceMac := [6]byte{0, 0, 0, 0, 0, 0}
 
 	tc := c.getTransmissionContainer(COMMANDID_GET_MAC, payload.EmptyPayload())
-	response, err := c.transmitCommand(tc)
+	response, err := c.transmitCommandWithResponse(tc)
 	if err != nil {
 		return deviceMac, fmt.Errorf("failed to encode packet. %v", err)
 	}
@@ -192,7 +207,7 @@ func (c *Client) GetMac() ([6]byte, error) {
 
 func (c *Client) GetName() (string, error) {
 	tc := c.getTransmissionContainer(COMMANDID_GET_NAME, payload.EmptyPayload())
-	response, err := c.transmitCommand(tc)
+	response, err := c.transmitCommandWithResponse(tc)
 	if err != nil {
 		return "", fmt.Errorf("failed to encode packet. %v", err)
 	}
@@ -210,9 +225,10 @@ func (c *Client) GetName() (string, error) {
 	return name, nil
 }
 
+// GetGroups returns the Groups are the paired devices. This call returns all devices known to the gateway.
 func (c *Client) GetGroups() (*Groups, error) {
 	tc := c.getTransmissionContainer(COMMANDID_JMCP, payload.JcmpPayload("{\"CMD\":\"GET_GROUPS\"}"))
-	response, err := c.transmitCommand(tc)
+	response, err := c.transmitCommandWithResponse(tc)
 	if err != nil {
 		return nil, fmt.Errorf("failed to encode packet. %v", err)
 	}
@@ -228,7 +244,32 @@ func (c *Client) GetGroups() (*Groups, error) {
 	responsePayload := string(response.Packet.payload.ToByteArray())
 	groups, err := DecodeGroups(responsePayload)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal groups object. %v", err)
+		return nil, fmt.Errorf("failed to unmarshal Groups object. %v", err)
+	}
+
+	return &groups, nil
+}
+
+// GetGroupsForUser returns only the devices that are paired with the current user. We probably should always use this.
+func (c *Client) GetGroupsForUser(userID byte) (*Groups, error) {
+	tc := c.getTransmissionContainer(COMMANDID_JMCP, payload.JcmpPayload(fmt.Sprintf("{\"CMD\":\"GET_GROUPS\", \"FORUSER\":%d}", userID)))
+	response, err := c.transmitCommandWithResponse(tc)
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode packet. %v", err)
+	}
+
+	if response == nil {
+		return nil, fmt.Errorf("unexpected nil response value")
+	}
+
+	if !response.isResponseFor(tc) {
+		return nil, fmt.Errorf("received unexpected packet: %s", response)
+	}
+
+	responsePayload := string(response.Packet.payload.ToByteArray())
+	groups, err := DecodeGroups(responsePayload)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal Groups object. %v", err)
 	}
 
 	return &groups, nil
@@ -236,7 +277,7 @@ func (c *Client) GetGroups() (*Groups, error) {
 
 func (c *Client) GetUsers() (*Users, error) {
 	tc := c.getTransmissionContainer(COMMANDID_JMCP, payload.JcmpPayload("{\"CMD\":\"GET_USERS\"}"))
-	response, err := c.transmitCommand(tc)
+	response, err := c.transmitCommandWithResponse(tc)
 	if err != nil {
 		return nil, fmt.Errorf("failed to encode packet. %v", err)
 	}
@@ -252,15 +293,16 @@ func (c *Client) GetUsers() (*Users, error) {
 	responsePayload := string(response.Packet.payload.ToByteArray())
 	users, err := DecodeUsers(responsePayload)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal groups object. %v", err)
+		return nil, fmt.Errorf("failed to unmarshal Groups object. %v", err)
 	}
 
 	return &users, nil
 }
 
+// GetValues returns a map of port and some kind of number. I don't know how to handle that.
 func (c *Client) GetValues() (*Values, error) {
 	tc := c.getTransmissionContainer(COMMANDID_JMCP, payload.JcmpPayload("{\"CMD\":\"GET_VALUES\"}"))
-	response, err := c.transmitCommand(tc)
+	response, err := c.transmitCommandWithResponse(tc)
 	if err != nil {
 		return nil, fmt.Errorf("failed to encode packet. %v", err)
 	}
@@ -276,7 +318,7 @@ func (c *Client) GetValues() (*Values, error) {
 	responsePayload := string(response.Packet.payload.ToByteArray())
 	values, err := DecodeValues(responsePayload)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal groups object. %v", err)
+		return nil, fmt.Errorf("failed to unmarshal Groups object. %v", err)
 	}
 
 	return &values, nil
@@ -292,7 +334,7 @@ func (c *Client) Login(username string, password string) error {
 	}
 
 	tc := c.getTransmissionContainer(COMMANDID_LOGIN, payload.LoginPayload(username, password))
-	response, err := c.transmitCommand(tc)
+	response, err := c.transmitCommandWithResponse(tc)
 	if err != nil {
 		return fmt.Errorf("failed to encode packet. %v", err)
 	}
@@ -312,16 +354,65 @@ func (c *Client) Login(username string, password string) error {
 	return nil
 }
 
+func (c *Client) SetToken(token uint32) {
+	c.token = token
+}
+
+func (c *Client) GetToken() uint32 {
+	return c.token
+}
+
 func (c *Client) Logout() error {
+	tc := c.getTransmissionContainer(COMMANDID_LOGOUT, payload.EmptyPayload())
+	err := c.transmitCommandWithNoResponse(tc) // Don't care about response, if any. It seems gateway doesn't send response for logout request
+	if err != nil {
+		return fmt.Errorf("failed to encode packet. %v", err)
+	}
+
+	// clear local token store
+	c.token = 0
+
 	return nil
 }
 
-func (c *Client) SetState() error {
+func (c *Client) SetState(portID byte) error {
+	tc := c.getTransmissionContainer(COMMANDID_SET_STATE, payload.SetStatePayload(portID))
+	response, err := c.transmitCommandWithResponse(tc)
+	if err != nil {
+		return fmt.Errorf("failed to encode packet. %v", err)
+	}
+
+	if response == nil {
+		return fmt.Errorf("unexpected nil response value")
+	}
+
+	if !response.isResponseFor(tc) {
+		return fmt.Errorf("received unexpected packet: %s", response)
+	}
+
+	fmt.Printf("Set State response: %s", response.String())
+
 	return nil
 }
 
-func (c *Client) GetTransition() error {
-	return nil
+// GetTransition returns the current state of the port. You can see how much open it is or if it is still running.
+func (c *Client) GetTransition(portID byte) (*payload.HmGetTransitionResponse, error) {
+	tc := c.getTransmissionContainer(COMMANDID_HM_GET_TRANSITION, payload.HmGetTransitionPayload(portID))
+	response, err := c.transmitCommandWithResponse(tc)
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode packet. %v", err)
+	}
+
+	if response == nil {
+		return nil, fmt.Errorf("unexpected nil response value")
+	}
+
+	if !response.isResponseFor(tc) {
+		return nil, fmt.Errorf("received unexpected packet: %s", response)
+	}
+
+	transitionResponse := response.Packet.payload.(*payload.HmGetTransitionResponse)
+	return transitionResponse, nil
 }
 
 func (c *Client) AddUser(username string, password string) error {

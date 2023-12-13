@@ -23,7 +23,7 @@ func TestUnmarshalDiscoveryResponseXml(t *testing.T) {
 
 	err := xml.Unmarshal([]byte(response), &decoded)
 	if err != nil {
-		fmt.Errorf("failed to unmarshall received xml content. %v", err)
+		t.Logf("failed to unmarshall received xml content. %v", err)
 		t.Fail()
 	}
 

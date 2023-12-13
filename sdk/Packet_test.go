@@ -34,6 +34,10 @@ func TestPacketDecode(t *testing.T) {
 		t.Run(testCase.Name, func(test *testing.T) {
 			encodedInput := testCase.EncodedInput
 			encodedInputBytes, err := hex.DecodeString(encodedInput)
+			if err != nil {
+				test.Logf("Failed to decode encodedInput string. %v", err)
+				test.Fail()
+			}
 
 			encodedInputBuffer := new(bytes.Buffer)
 			_, err = encodedInputBuffer.Write(encodedInputBytes)

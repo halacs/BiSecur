@@ -107,7 +107,33 @@ func TestGetGroupsOnRealGateway(t *testing.T) {
 		t.Fail()
 	}
 
-	t.Logf("Received groups: %s", groups.toString())
+	t.Logf("Received Groups: %s", groups.toString())
+}
+
+func TestGetGroupsForUserOnRealGateway(t *testing.T) {
+	client := NewClient(sourceMacAddress, destinationMacAddress, host, port)
+	err := client.Open()
+	if err != nil {
+		t.Logf("%v", err)
+		t.Fail()
+	}
+
+	defer func() {
+		err2 := client.Close()
+		if err2 != nil {
+			t.Logf("%v", err2)
+			t.Fail()
+		}
+	}()
+
+	var userID byte = 0
+	groups, err := client.GetGroupsForUser(userID)
+	if err != nil {
+		t.Logf("%v", err)
+		t.Fail()
+	}
+
+	t.Logf("Received Groups: %s", groups.toString())
 }
 
 func TestGetUsersOnRealGateway(t *testing.T) {
@@ -208,6 +234,78 @@ func TestLoginOnRealGateway(t *testing.T) {
 	t.Logf("client: %+v", client)
 }
 
+func TestLoginOutRealGateway(t *testing.T) {
+	client := NewClient(sourceMacAddress, destinationMacAddress, host, port)
+	err := client.Open()
+	if err != nil {
+		t.Logf("%v", err)
+		t.Fail()
+	}
+
+	defer func() {
+		err2 := client.Close()
+		if err2 != nil {
+			t.Logf("%v", err2)
+			t.Fail()
+		}
+	}()
+	/*
+		err = client.Login(username, password)
+		if err != nil {
+			t.Logf("%v", err)
+			//t.Fail()
+		}
+	*/
+
+	/*
+		client.SetToken(0xFACA25A0)
+	*/
+
+	err = client.Logout()
+	if err != nil {
+		t.Logf("%v", err)
+		t.Fail()
+	}
+
+	t.Logf("client: %+v", client)
+}
+
+func TestSetStateRealGateway(t *testing.T) {
+	client := NewClient(sourceMacAddress, destinationMacAddress, host, port)
+	err := client.Open()
+	if err != nil {
+		t.Logf("%v", err)
+		t.Fail()
+	}
+
+	defer func() {
+		err2 := client.Close()
+		if err2 != nil {
+			t.Logf("%v", err2)
+			t.Fail()
+		}
+	}()
+
+	t.Logf("Logging in...")
+
+	err = client.Login(username, password)
+	if err != nil {
+		t.Logf("%v", err)
+		t.Fail()
+	}
+
+	t.Logf("Logged in successfuly. Token: %X", client.getToken())
+
+	var portID byte = 0
+	err = client.SetState(portID)
+	if err != nil {
+		t.Logf("%v", err)
+		t.Fail()
+	}
+
+	t.Logf("State has been set for port ID %d.", portID)
+}
+
 func TestDiscoveryOnRealGateway(t *testing.T) {
 	ctx := context.Background()
 	discovery := NewDiscovery(ctx, func(gateway Gateway) {
@@ -226,4 +324,37 @@ func TestDiscoveryOnRealGateway(t *testing.T) {
 	t.Logf("Stop disovery...\n")
 	discovery.Stop()
 	t.Logf("Terminated\n")
+}
+
+func TestGetTransitionOnRealGateway(t *testing.T) {
+	client := NewClient(sourceMacAddress, destinationMacAddress, host, port)
+	err := client.Open()
+	if err != nil {
+		t.Logf("%v", err)
+		t.Fail()
+	}
+
+	defer func() {
+		err2 := client.Close()
+		if err2 != nil {
+			t.Logf("%v", err2)
+			t.Fail()
+		}
+	}()
+
+	err = client.Login(username, password)
+	if err != nil {
+		t.Logf("Failed to login. %v", err)
+		t.Fail()
+	}
+
+	t.Logf("Logged in successfully.")
+
+	status, err := client.GetTransition(0x00)
+	if err != nil {
+		t.Logf("%v", err)
+		t.Fail()
+	}
+
+	t.Logf("Transition: %+v", status)
 }

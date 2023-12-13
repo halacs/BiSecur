@@ -242,7 +242,7 @@ func TestTransmissionContainerEncode(t *testing.T) {
 						Token:     uint32(0x302B7D75),
 						CommandID: COMMANDID_SET_STATE,
 					},
-					payload: payload.SetStatePayload(),
+					payload: payload.SetStatePayload(0x00),
 					PacketPost: PacketPost{
 						Checksum: 0x8A,
 					},

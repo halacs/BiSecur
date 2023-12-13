@@ -62,5 +62,5 @@ func getHormanEncodedUsernamePassword(username string, password string) []byte {
 }
 
 func (p *Payload) String() string {
-	return fmt.Sprintf("%s", p.Encode())
+	return string(p.Encode())
 }

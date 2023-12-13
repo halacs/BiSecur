@@ -8,12 +8,12 @@ import (
 type Users []User
 
 // Example:
-// [{"id":0,"name":"admin","isAdmin":true,"groups":[]},{"id":1,"name":"app","isAdmin":false,"groups":[0]}]
+// [{"id":0,"name":"admin","isAdmin":true,"Groups":[]},{"id":1,"name":"app","isAdmin":false,"Groups":[0]}]
 type User struct {
 	ID      int    `json:"id"`
 	Name    string `json:"name"`
 	IsAdmin bool   `json:"isAdmin"`
-	groups  []int  `json:"groups"`
+	Groups  []int  `json:"Groups"`
 }
 
 func DecodeUsers(jsonStr string) (Users, error) {
@@ -28,10 +28,10 @@ func DecodeUsers(jsonStr string) (Users, error) {
 }
 
 func (u *User) String() string {
-	return fmt.Sprintf("[ID=%d, Name=\"%s\", IsAdmin=%t, Groups:%v]", u.ID, u.Name, u.IsAdmin, u.groups)
+	return fmt.Sprintf("[ID=%d, Name=\"%s\", IsAdmin=%t, Groups:%v]", u.ID, u.Name, u.IsAdmin, u.Groups)
 }
 
-func (users Users) toString() string {
+func (users Users) String() string {
 	s := ""
 	for _, u := range users {
 		s = s + u.String()
