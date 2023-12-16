@@ -118,7 +118,11 @@ func (d *Discovery) receivingPackets() {
 			default:
 				data := make([]byte, 10000)
 
-				//connection.SetReadDeadline(time.Now().Add(5 * time.Second))
+				err = connection.SetReadDeadline(time.Now().Add(5 * time.Second))
+				if err != nil {
+					// TODO add warning log
+					continue
+				}
 				_, addr, err := connection.ReadFrom(data)
 				if err != nil {
 					continue

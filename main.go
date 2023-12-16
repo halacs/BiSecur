@@ -1,9 +1,7 @@
 package main
 
-import (
-	"fmt"
-)
+import "bisecure/cli/cmd"
 
 func main() {
-	fmt.Println("Hello")
+	cmd.Execute()
 }
