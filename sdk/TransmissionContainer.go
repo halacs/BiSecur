@@ -191,7 +191,6 @@ func (tc *TransmissionContainer) Equal(o *TransmissionContainer) bool {
 	}
 
 	if !tc.Packet.Equal(&o.Packet) {
-		fmt.Printf("%v\n%v", tc.Packet.payload.ToByteArray(), o.Packet.payload.ToByteArray())
 		return false
 	}
 

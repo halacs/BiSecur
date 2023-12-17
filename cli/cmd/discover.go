@@ -3,7 +3,6 @@ package cmd
 import (
 	"bisecure/sdk"
 	"context"
-	"fmt"
 	"os"
 	"time"
 
@@ -22,7 +21,7 @@ func init() {
 		Run: func(cmd *cobra.Command, args []string) {
 			err := discover(discoveryTime)
 			if err != nil {
-				fmt.Printf("%v\n", err)
+				log.Fatalf("%v", err)
 				os.Exit(2)
 			}
 		},
@@ -35,28 +34,28 @@ func init() {
 
 func discover(discoveryTime int) error {
 	ctx := context.Background()
-	discovery := sdk.NewDiscovery(ctx, func(gateway sdk.Gateway) {
-		fmt.Printf("Response received: %+v\n", gateway)
+	discovery := sdk.NewDiscovery(ctx, log, func(gateway sdk.Gateway) {
+		log.Infof("Response received: %+v", gateway)
 	})
 
-	fmt.Printf("Start discovery...\n")
+	log.Infof("Start discovery...")
 	err := discovery.Start()
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("Waiting for responses...\n")
+	log.Infof("Waiting for responses...")
 	time.Sleep(time.Second * time.Duration(discoveryTime))
 
 	list := discovery.GetList()
-	fmt.Printf("list: %+v\n", list)
+	log.Infof("list: %+v", list)
 
-	fmt.Printf("Stop disovery...\n")
+	log.Infof("Stop disovery...")
 	err = discovery.Stop()
 	if err != nil {
 		return nil
 	}
 
-	fmt.Printf("Terminated\n")
+	log.Infof("Terminated")
 	return nil
 }

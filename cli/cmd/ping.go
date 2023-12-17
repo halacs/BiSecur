@@ -3,7 +3,6 @@ package cmd
 import (
 	"bisecure/cli"
 	"bisecure/sdk"
-	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -11,7 +10,7 @@ import (
 
 func init() {
 	var (
-		count = 4
+		count int
 	)
 
 	pingCmd := &cobra.Command{
@@ -21,13 +20,13 @@ func init() {
 		Run: func(cmd *cobra.Command, args []string) {
 			mac, err := cli.ParesMacString(deviceMac)
 			if err != nil {
-				fmt.Printf("%v\n", err)
+				log.Fatalf("%v", err)
 				os.Exit(1)
 			}
 
 			err = ping(localMac, mac, host, port, count)
 			if err != nil {
-				fmt.Printf("%v\n", err)
+				log.Fatalf("%v", err)
 				os.Exit(2)
 			}
 		},
@@ -38,7 +37,7 @@ func init() {
 }
 
 func ping(localMac [6]byte, mac [6]byte, host string, port int, count int) error {
-	client := sdk.NewClient(localMac, mac, host, port)
+	client := sdk.NewClient(log, localMac, mac, host, port)
 	err := client.Open()
 	if err != nil {
 		return err
@@ -47,7 +46,7 @@ func ping(localMac [6]byte, mac [6]byte, host string, port int, count int) error
 	defer func() {
 		err2 := client.Close()
 		if err2 != nil {
-			fmt.Printf("%v", err) // TODO add log message
+			log.Errorf("%v", err)
 		}
 	}()
 

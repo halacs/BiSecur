@@ -25,7 +25,7 @@ func init() {
 
 			err = setStatus(localMac, mac, host, port, username, password, byte(devicePort))
 			if err != nil {
-				fmt.Printf("%v\n", err)
+				log.Fatalf("%v", err)
 				os.Exit(2)
 			}
 		},
@@ -38,17 +38,16 @@ func init() {
 }
 
 func setStatus(localMac [6]byte, mac [6]byte, host string, port int, username string, password string, devicePort byte) error {
-	client := sdk.NewClient(localMac, mac, host, port)
+	client := sdk.NewClient(log, localMac, mac, host, port)
 	err := client.Open()
 	if err != nil {
-		fmt.Printf("%v", err)
+		return err
 	}
 
 	defer func() {
 		err2 := client.Close()
 		if err2 != nil {
-			fmt.Printf("%v", err2)
-			os.Exit(2)
+			log.Errorf("%v", err2)
 		}
 	}()
 
@@ -57,14 +56,14 @@ func setStatus(localMac [6]byte, mac [6]byte, host string, port int, username st
 		return err
 	}
 
-	fmt.Println("Logged in successfully.")
+	log.Infof("Logged in successfully.")
 
 	err = client.SetState(devicePort)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("Done\n")
+	log.Infof("Done")
 
 	return nil
 }

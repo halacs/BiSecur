@@ -34,7 +34,7 @@ func init() {
 }
 
 func listUsers(localMac [6]byte, mac [6]byte, host string, port int) error {
-	client := sdk.NewClient(localMac, mac, host, port)
+	client := sdk.NewClient(log, localMac, mac, host, port)
 	err := client.Open()
 	if err != nil {
 		return err
@@ -43,7 +43,7 @@ func listUsers(localMac [6]byte, mac [6]byte, host string, port int) error {
 	defer func() {
 		err2 := client.Close()
 		if err2 != nil {
-			fmt.Printf("%v", err) // TODO add log message
+			log.Errorf("%v", err)
 		}
 	}()
 
@@ -52,7 +52,7 @@ func listUsers(localMac [6]byte, mac [6]byte, host string, port int) error {
 		return err
 	}
 
-	fmt.Printf("Users: %s\n", users.String())
+	log.Infof("Users: %s", users.String())
 
 	return nil
 }

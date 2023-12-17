@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/xml"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"net"
 	"sync"
 	"time"
@@ -27,16 +28,18 @@ type Gateway struct {
 type Discovery struct {
 	wg           *sync.WaitGroup
 	ctx          context.Context
+	log          *logrus.Logger
 	cancelFunc   context.CancelFunc
 	callbackFunc func(gateway Gateway)
 	gateways     map[string]Gateway
 }
 
-func NewDiscovery(ctx context.Context, callbackFunc func(gateway Gateway)) *Discovery {
+func NewDiscovery(ctx context.Context, log *logrus.Logger, callbackFunc func(gateway Gateway)) *Discovery {
 	ctx2, cancelFunc := context.WithCancel(ctx)
 	return &Discovery{
 		wg:           &sync.WaitGroup{},
 		ctx:          ctx2,
+		log:          log,
 		cancelFunc:   cancelFunc,
 		callbackFunc: callbackFunc,
 		gateways:     make(map[string]Gateway),
@@ -48,7 +51,7 @@ func (d *Discovery) sendDiscoveryPacket(broadcastConn *net.UDPConn) error {
 	if err != nil {
 		return fmt.Errorf("failed to send discovery packet. %v", err)
 	}
-	fmt.Println("Packet sent")
+	d.log.Debugf("Packet sent")
 	return nil
 }
 
@@ -62,24 +65,26 @@ func (d *Discovery) sendingPackets() {
 
 		broadcastAddr, err := net.ResolveUDPAddr("udp", "255.255.255.255:4001")
 		if err != nil {
-			fmt.Printf("failed to resolve UDP address. %v\n", err)
+			d.log.Errorf("failed to resolve UDP address. %v", err)
 			return
 		}
 
 		broadcastConn, err := net.DialUDP("udp", nil, broadcastAddr)
 		if err != nil {
-			fmt.Printf("failed to open connection. %v\n", err)
+			d.log.Errorf("failed to open connection. %v", err)
 			return
 		}
 
 		defer func() {
 			err := broadcastConn.Close()
-			fmt.Printf("failed to close connection. %v\n", err)
+			if err != nil {
+				d.log.Errorf("failed to close connection. %v", err)
+			}
 		}()
 
 		err = d.sendDiscoveryPacket(broadcastConn)
 		if err != nil {
-			fmt.Printf("failed to send discovery packet. %v\n", err)
+			d.log.Errorf("failed to send discovery packet. %v", err)
 		}
 
 		for {
@@ -89,7 +94,7 @@ func (d *Discovery) sendingPackets() {
 			case <-ticker.C:
 				err := d.sendDiscoveryPacket(broadcastConn)
 				if err != nil {
-					fmt.Printf("failed to send discovery packet. %v\n", err)
+					d.log.Errorf("failed to send discovery packet. %v", err)
 				}
 			}
 		}
@@ -104,11 +109,13 @@ func (d *Discovery) receivingPackets() {
 
 		connection, err := net.ListenPacket("udp", ":4002")
 		if err != nil {
-			fmt.Printf("failed to open listening socket. %v\n", err)
+			d.log.Errorf("failed to open listening socket. %v", err)
 		}
 		defer func() {
 			err := connection.Close()
-			fmt.Printf("failed to close network connection. %v\n", err)
+			if err != nil {
+				d.log.Errorf("failed to close network connection. %v", err)
+			}
 		}()
 
 		for {
@@ -120,7 +127,7 @@ func (d *Discovery) receivingPackets() {
 
 				err = connection.SetReadDeadline(time.Now().Add(5 * time.Second))
 				if err != nil {
-					// TODO add warning log
+					d.log.Errorf("failed to set read deadline. %v", err)
 					continue
 				}
 				_, addr, err := connection.ReadFrom(data)
@@ -140,7 +147,7 @@ func (d *Discovery) receivingPackets() {
 
 				err = xml.Unmarshal(data, &found)
 				if err != nil {
-					fmt.Printf("failed to unmarshall received xml content. %v\n", err)
+					d.log.Errorf("failed to unmarshall received xml content. %v", err)
 				}
 
 				key := fmt.Sprintf("%s%d", found.IpAddress, found.Port)

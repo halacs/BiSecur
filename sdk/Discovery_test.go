@@ -2,7 +2,6 @@ package sdk
 
 import (
 	"encoding/xml"
-	"fmt"
 	"reflect"
 	"testing"
 )
@@ -29,6 +28,6 @@ func TestUnmarshalDiscoveryResponseXml(t *testing.T) {
 
 	if !reflect.DeepEqual(expected, decoded) {
 		t.Fail()
-		fmt.Printf("Actual:\t\t%+v\nExpected:\t%+v\n", decoded, expected)
+		t.Logf("Actual:\t\t%+v\nExpected:\t%+v", decoded, expected)
 	}
 }

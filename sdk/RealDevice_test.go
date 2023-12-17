@@ -309,21 +309,21 @@ func TestSetStateRealGateway(t *testing.T) {
 func TestDiscoveryOnRealGateway(t *testing.T) {
 	ctx := context.Background()
 	discovery := NewDiscovery(ctx, func(gateway Gateway) {
-		t.Logf("Response received: %+v\n", gateway)
+		t.Logf("Response received: %+v", gateway)
 	})
 
-	t.Logf("Start discovery...\n")
+	t.Logf("Start discovery...")
 	discovery.Start()
 
-	t.Logf("Waiting few second for responses...\n")
+	t.Logf("Waiting few second for responses...")
 	time.Sleep(time.Second * 20)
 
 	list := discovery.GetList()
-	t.Logf("list: %+v\n", list)
+	t.Logf("list: %+v", list)
 
-	t.Logf("Stop disovery...\n")
+	t.Logf("Stop disovery...")
 	discovery.Stop()
-	t.Logf("Terminated\n")
+	t.Logf("Terminated")
 }
 
 func TestGetTransitionOnRealGateway(t *testing.T) {

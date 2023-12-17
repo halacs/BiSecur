@@ -4,6 +4,7 @@ import (
 	"bisecure/sdk/payload"
 	"bytes"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"net"
 	"time"
 )
@@ -17,10 +18,12 @@ type Client struct {
 	token                 uint32
 	senderID              byte
 	connection            *net.TCPConn
+	log                   *logrus.Logger
 }
 
-func NewClient(sourceMacAddress [6]byte, destinationMacAddress [6]byte, host string, port int) *Client {
+func NewClient(log *logrus.Logger, sourceMacAddress [6]byte, destinationMacAddress [6]byte, host string, port int) *Client {
 	return &Client{
+		log:                   log,
 		sourceMacAddress:      sourceMacAddress,
 		destinationMacAddress: destinationMacAddress,
 		host:                  host,
@@ -69,7 +72,7 @@ func (c *Client) transmitCommand(requestTc *TransmissionContainer, expectRespons
 	if err != nil {
 		return nil, fmt.Errorf("failed to encode packet. %v", err)
 	}
-	fmt.Printf("Request bytes: %X\n", requestBytes)
+	c.log.Debugf("Request bytes: %X", requestBytes)
 	_, err = c.connection.Write(requestBytes)
 	if err != nil {
 		return nil, fmt.Errorf("failed to write into network stream. %v", err)
@@ -85,7 +88,7 @@ func (c *Client) transmitCommand(requestTc *TransmissionContainer, expectRespons
 		}
 		size, err := c.connection.Read(receivedBytesTmp)
 		receivedHexString := string(receivedBytesTmp[0:size])
-		fmt.Printf("Received bytes: %d\nResponse bytes: %s\n", size, receivedHexString)
+		c.log.Debugf("Received bytes: %d\nResponse bytes: %s", size, receivedHexString)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read network stream. %v", err)
 		}
@@ -101,7 +104,7 @@ func (c *Client) transmitCommand(requestTc *TransmissionContainer, expectRespons
 			return nil, fmt.Errorf("failed to decode transmission container. %v", err)
 		}
 
-		fmt.Printf("Received TC: %v\n", receivedTc)
+		c.log.Debugf("Received TC: %v", receivedTc)
 	}
 	return receivedTc, err
 }
@@ -117,7 +120,7 @@ func (c *Client) Open() error {
 		return fmt.Errorf("resolveTCPAddr failed. %v", err)
 	}
 
-	fmt.Printf("Connecting to %s\n", servAddr)
+	c.log.Debugf("Connecting to %s", servAddr)
 
 	c.connection, err = net.DialTCP("tcp", nil, tcpAddr)
 	if err != nil {
@@ -147,7 +150,7 @@ func (c *Client) Ping(count int) error {
 
 	for i := 0; i < count; i++ {
 		requestTc := c.getTransmissionContainer(COMMANDID_PING, payload.EmptyPayload())
-		fmt.Printf("requestTC: %v\n", requestTc)
+		c.log.Debugf("requestTC: %v", requestTc)
 		responseTc, err := c.transmitCommandWithResponse(requestTc)
 		if err != nil {
 			return fmt.Errorf("%v", err)
@@ -162,11 +165,11 @@ func (c *Client) Ping(count int) error {
 		}
 
 		received = received + 1
-		fmt.Printf("received %d packet(s)\n", received)
+		c.log.Debugf("received %d packet(s)", received)
 
 		if i < count {
 			time.Sleep(time.Second * 2)
-			fmt.Println("-------------------")
+			c.log.Debugf("-------------------")
 		}
 	}
 
@@ -390,7 +393,7 @@ func (c *Client) SetState(portID byte) error {
 		return fmt.Errorf("received unexpected packet: %s", response)
 	}
 
-	fmt.Printf("Set State response: %s", response.String())
+	c.log.Debugf("Set State response: %s", response.String())
 
 	return nil
 }
