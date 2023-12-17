@@ -9,6 +9,36 @@ If all goes fine, later this repository will provide you both a GoLang SDK and a
 - manage users
 - etc.
 
+## Usage
+```
+Application to manage your Hörmann BiSecur gateway without the central cloud directly on your LAN.
+
+Usage:
+  halsecur [command]
+
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  discover    Discover Hörmann BiSecur gateways on the local network
+  get-name    Queries the name of the Hörmann BiSecur gateway
+  groups      Manages users defined in your Hörmann BiSecur gateway.
+  help        Help about any command
+  ping        Check if your Hörmann BiSecur gateway is reachable or not.
+  set-state   Open or close a door connected to your Hörmann BiSecur gateway.
+  status      Queries the status (open/closed/etc) of your door.
+  users       Manages users defined in your Hörmann BiSecur gateway.
+
+Flags:
+      --debug             debug log level
+  -h, --help              help for halsecur
+      --host string       IP or host name or the Hörmann BiSecure gateway
+      --mac string        MAC address of the Hörmann BiSecur gateway
+      --password string   Valid password belongs to the given username
+      --port int           (default 4000)
+      --username string   Valid username
+
+Use "halsecur [command] --help" for more information about a command.
+```
+
 ## Acknowledgement
 
 Thanks for [SEC Consult](https://sec-consult.com/blog/detail/hoermann-opening-doors-for-everyone/) for the initial analysis and documentation.
@@ -16,10 +46,6 @@ Thanks for [SEC Consult](https://sec-consult.com/blog/detail/hoermann-opening-do
 Based on the above study someone could create a [Kotlin SDK](https://github.com/bisdk/sdk) which also helped me a lot.
 
 Taken into consideration that Hörmann will stop their cloud required for BiSecur Gateway usages from 2024, I asked Hörmann support to publish their protocol already leaked in above repositories, but they stated that this code is impossible to write.
-
-## Links
-- https://sec-consult.com/blog/detail/hoermann-opening-doors-for-everyone/
-- https://github.com/bisdk/sdk
 
 ## Disclaimer
 
@@ -38,3 +64,7 @@ This software may include third-party software components subject to their own l
 **DISCLAIMER SPECIFIC TO BiSecur Gateway**
 
 By using this software, you acknowledge that it was developed with the best intentions; however, it may lead to the BiSecur Gateway device becoming inoperable, or the associated physical door may open or remain open. Halacs explicitly disclaims any responsibility or liability for such events. It is your responsibility to ensure the proper functioning and security of the BiSecur Gateway device and the connected physical door. If you do not agree to these terms, you may not use, modify, or distribute this software.
+
+## Links
+- https://sec-consult.com/blog/detail/hoermann-opening-doors-for-everyone/
+- https://github.com/bisdk/sdk
