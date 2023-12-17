@@ -1,32 +1,58 @@
 package cmd
 
 import (
+	"bisecure/cli"
+	"bisecure/sdk"
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
 
-// usersCmd represents the users command
-var usersCmd = &cobra.Command{
-	Use:   "users",
-	Short: "Manages users defined in your Hörmann BiSecur gateway.",
-	Long:  ``,
-	Run: func(cmd *cobra.Command, args []string) {
-		// TODO implement query user list and rights, add and delete user, password change of an already existing user
-		fmt.Println("users called")
-	},
+func init() {
+	usersCmd := &cobra.Command{
+		Use:   "users",
+		Short: "Manages users defined in your Hörmann BiSecur gateway.",
+		Long:  ``,
+		Run: func(cmd *cobra.Command, args []string) {
+			// TODO implement query user list and rights, add and delete user, password change of an already existing user
+			mac, err := cli.ParesMacString(deviceMac)
+			if err != nil {
+				fmt.Printf("%v\n", err)
+				os.Exit(1)
+			}
+
+			err = listUsers(localMac, mac, host, port)
+			if err != nil {
+				fmt.Printf("%v\n", err)
+				os.Exit(2)
+			}
+		},
+	}
+
+	rootCmd.AddCommand(usersCmd)
 }
 
-func init() {
-	rootCmd.AddCommand(usersCmd)
+func listUsers(localMac [6]byte, mac [6]byte, host string, port int) error {
+	client := sdk.NewClient(localMac, mac, host, port)
+	err := client.Open()
+	if err != nil {
+		return err
+	}
 
-	// Here you will define your flags and configuration settings.
+	defer func() {
+		err2 := client.Close()
+		if err2 != nil {
+			fmt.Printf("%v", err) // TODO add log message
+		}
+	}()
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// usersCmd.PersistentFlags().String("foo", "", "A help for foo")
+	users, err := client.GetUsers()
+	if err != nil {
+		return err
+	}
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// usersCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	fmt.Printf("Users: %s\n", users.String())
+
+	return nil
 }

@@ -1,31 +1,70 @@
 package cmd
 
 import (
+	"bisecure/cli"
+	"bisecure/sdk"
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
 
-// setStateCmd represents the setState command
-var setStateCmd = &cobra.Command{
-	Use:   "set-state",
-	Short: "Open or close a door connected to your Hörmann BiSecur gateway.",
-	Long:  ``,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("setState called")
-	},
-}
-
 func init() {
+	var devicePort int
+
+	setStateCmd := &cobra.Command{
+		Use:   "set-state",
+		Short: "Open or close a door connected to your Hörmann BiSecur gateway.",
+		Long:  ``,
+		Run: func(cmd *cobra.Command, args []string) {
+			mac, err := cli.ParesMacString(deviceMac)
+			if err != nil {
+				fmt.Printf("%v\n", err)
+				os.Exit(1)
+			}
+
+			err = setStatus(localMac, mac, host, port, username, password, byte(devicePort))
+			if err != nil {
+				fmt.Printf("%v\n", err)
+				os.Exit(2)
+			}
+		},
+	}
+
 	rootCmd.AddCommand(setStateCmd)
 
-	// Here you will define your flags and configuration settings.
+	setStateCmd.Flags().IntVar(&devicePort, devicePortName, 0, "Port number of the door")
+	setStateCmd.MarkFlagsOneRequired(devicePortName)
+}
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// setStateCmd.PersistentFlags().String("foo", "", "A help for foo")
+func setStatus(localMac [6]byte, mac [6]byte, host string, port int, username string, password string, devicePort byte) error {
+	client := sdk.NewClient(localMac, mac, host, port)
+	err := client.Open()
+	if err != nil {
+		fmt.Printf("%v", err)
+	}
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// setStateCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	defer func() {
+		err2 := client.Close()
+		if err2 != nil {
+			fmt.Printf("%v", err2)
+			os.Exit(2)
+		}
+	}()
+
+	err = client.Login(username, password)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Logged in successfully.")
+
+	err = client.SetState(devicePort)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Done\n")
+
+	return nil
 }

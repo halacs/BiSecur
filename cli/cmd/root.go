@@ -36,20 +36,10 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.cli.yaml)")
-
 	rootCmd.PersistentFlags().StringVar(&username, "username", "", "Valid username")
 	rootCmd.PersistentFlags().StringVar(&password, "password", "", "Valid password belongs to the given username")
 	rootCmd.PersistentFlags().StringVar(&host, "host", "", "IP or host name or the Hörmann BiSecure gateway")
 	rootCmd.PersistentFlags().IntVar(&port, "port", 4000, "")
 	rootCmd.PersistentFlags().StringVar(&deviceMac, "mac", "", "MAC address of the Hörmann BiSecur gateway")
 	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "debug log level")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	//rootCmd.Flags().String("username", "", "")
 }

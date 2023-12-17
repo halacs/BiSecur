@@ -10,34 +10,31 @@ import (
 )
 
 func init() {
-	var (
-		count = 4
-	)
-
-	pingCmd := &cobra.Command{
-		Use:   "ping",
-		Short: "Check if your Hörmann BiSecur gateway is reachable or not.",
+	groupsCmd := &cobra.Command{
+		Use:   "groups",
+		Short: "Manages users defined in your Hörmann BiSecur gateway.",
 		Long:  ``,
 		Run: func(cmd *cobra.Command, args []string) {
+			// TODO implement query user list and rights, add and delete user, password change of an already existing user
+
 			mac, err := cli.ParesMacString(deviceMac)
 			if err != nil {
 				fmt.Printf("%v\n", err)
 				os.Exit(1)
 			}
 
-			err = ping(localMac, mac, host, port, count)
+			err = listGroups(localMac, mac, host, port)
 			if err != nil {
 				fmt.Printf("%v\n", err)
 				os.Exit(2)
 			}
 		},
 	}
-	rootCmd.AddCommand(pingCmd)
 
-	pingCmd.Flags().IntVar(&count, "count", 5, "Amount of the ping packages will be sent to the device")
+	rootCmd.AddCommand(groupsCmd)
 }
 
-func ping(localMac [6]byte, mac [6]byte, host string, port int, count int) error {
+func listGroups(localMac [6]byte, mac [6]byte, host string, port int) error {
 	client := sdk.NewClient(localMac, mac, host, port)
 	err := client.Open()
 	if err != nil {
@@ -51,10 +48,12 @@ func ping(localMac [6]byte, mac [6]byte, host string, port int, count int) error
 		}
 	}()
 
-	err = client.Ping(count)
+	groups, err := client.GetGroups()
 	if err != nil {
 		return err
 	}
+
+	fmt.Printf("Groups: %s\n", groups.String())
 
 	return nil
 }
