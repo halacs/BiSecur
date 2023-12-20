@@ -3,7 +3,7 @@ package cmd
 import (
 	"bisecure/cli"
 	"bisecure/sdk"
-	"fmt"
+	"github.com/spf13/viper"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -13,17 +13,23 @@ func init() {
 	var devicePort int
 
 	setStateCmd := &cobra.Command{
-		Use:   "set-state",
-		Short: "Open or close a door connected to your Hörmann BiSecur gateway.",
-		Long:  ``,
+		Use:    "set-state",
+		Short:  "Open or close a door connected to your Hörmann BiSecur gateway.",
+		Long:   ``,
+		PreRun: toggleDebug,
 		Run: func(cmd *cobra.Command, args []string) {
+			deviceMac := viper.GetString(ArgNameDeviceMac)
+			host := viper.GetString(ArgNameHost)
+			port := viper.GetInt(ArgNamePort)
+			token := viper.GetUint32(ArgNameToken)
+
 			mac, err := cli.ParesMacString(deviceMac)
 			if err != nil {
-				fmt.Printf("%v\n", err)
+				log.Fatalf("%v", err)
 				os.Exit(1)
 			}
 
-			err = setStatus(localMac, mac, host, port, username, password, byte(devicePort))
+			err = setStatus(localMac, mac, host, port, byte(devicePort), token)
 			if err != nil {
 				log.Fatalf("%v", err)
 				os.Exit(2)
@@ -37,8 +43,8 @@ func init() {
 	setStateCmd.MarkFlagsOneRequired(devicePortName)
 }
 
-func setStatus(localMac [6]byte, mac [6]byte, host string, port int, username string, password string, devicePort byte) error {
-	client := sdk.NewClient(log, localMac, mac, host, port)
+func setStatus(localMac [6]byte, mac [6]byte, host string, port int, devicePort byte, token uint32) error {
+	client := sdk.NewClient(log, localMac, mac, host, port, token)
 	err := client.Open()
 	if err != nil {
 		return err
@@ -50,13 +56,6 @@ func setStatus(localMac [6]byte, mac [6]byte, host string, port int, username st
 			log.Errorf("%v", err2)
 		}
 	}()
-
-	err = client.Login(username, password)
-	if err != nil {
-		return err
-	}
-
-	log.Infof("Logged in successfully.")
 
 	err = client.SetState(devicePort)
 	if err != nil {

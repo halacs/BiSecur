@@ -21,7 +21,7 @@ type Client struct {
 	log                   *logrus.Logger
 }
 
-func NewClient(log *logrus.Logger, sourceMacAddress [6]byte, destinationMacAddress [6]byte, host string, port int) *Client {
+func NewClient(log *logrus.Logger, sourceMacAddress [6]byte, destinationMacAddress [6]byte, host string, port int, token uint32) *Client {
 	return &Client{
 		log:                   log,
 		sourceMacAddress:      sourceMacAddress,
@@ -29,7 +29,7 @@ func NewClient(log *logrus.Logger, sourceMacAddress [6]byte, destinationMacAddre
 		host:                  host,
 		port:                  port,
 		tag:                   1,
-		token:                 0,
+		token:                 token,
 		senderID:              0,
 	}
 }
@@ -68,6 +68,7 @@ func (c *Client) transmitCommandWithNoResponse(requestTc *TransmissionContainer)
 }
 
 func (c *Client) transmitCommand(requestTc *TransmissionContainer, expectResponse bool) (*TransmissionContainer, error) {
+	c.log.Debugf("Request: %s", requestTc.String())
 	requestBytes, err := requestTc.Encode()
 	if err != nil {
 		return nil, fmt.Errorf("failed to encode packet. %v", err)

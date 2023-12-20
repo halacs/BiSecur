@@ -22,18 +22,21 @@ Available Commands:
   get-name    Queries the name of the Hörmann BiSecur gateway
   groups      Manages users defined in your Hörmann BiSecur gateway.
   help        Help about any command
+  login       
+  logout      
   ping        Check if your Hörmann BiSecur gateway is reachable or not.
   set-state   Open or close a door connected to your Hörmann BiSecur gateway.
   status      Queries the status (open/closed/etc) of your door.
   users       Manages users defined in your Hörmann BiSecur gateway.
 
 Flags:
-      --debug             debug log level
+      --debug             debug log level (default true)
   -h, --help              help for halsecur
       --host string       IP or host name or the Hörmann BiSecure gateway
       --mac string        MAC address of the Hörmann BiSecur gateway
       --password string   Valid password belongs to the given username
       --port int           (default 4000)
+      --token uint32      Valid authentication token
       --username string   Valid username
 
 Use "halsecur [command] --help" for more information about a command.

@@ -160,9 +160,15 @@ func (tc *TransmissionContainer) isResponse() bool {
 	return (tc.Packet.CommandID & RESPONSE_MASK) == RESPONSE_MASK
 }
 
-func (tc *TransmissionContainer) isResponseFor(o *TransmissionContainer) bool {
+func (tc *TransmissionContainer) isResponseFor(request *TransmissionContainer) bool {
 	response := tc
-	return response.Packet.TAG == o.Packet.TAG && response.Packet.getCommandID() == o.Packet.getCommandID() && response.isResponse()
+
+	switch request.Packet.getCommandID() {
+	case COMMANDID_SET_STATE:
+		return response.Packet.TAG == request.Packet.TAG && response.Packet.getCommandID() == COMMANDID_HM_GET_TRANSITION && response.isResponse()
+	default:
+		return response.Packet.TAG == request.Packet.TAG && response.Packet.getCommandID() == request.Packet.getCommandID() && response.isResponse()
+	}
 }
 
 func (tc *TransmissionContainer) getChecksum() (byte, error) {

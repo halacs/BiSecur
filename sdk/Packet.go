@@ -226,6 +226,6 @@ func (p *Packet) Equal(o *Packet) bool {
 }
 
 func (p *Packet) String() string {
-	return fmt.Sprintf("Tag=0x%X, Token=0x%X, CommandID=0x%X, payload=[%s], Checksum=0x%X, isResponse=%t",
-		p.TAG, p.Token, p.CommandID, p.payload, p.Checksum, p.isResponse())
+	return fmt.Sprintf("Tag=0x%X, Token=0x%X, CommandID=0x%X (0x%X), payload=[%s], Checksum=0x%X, isResponse=%t",
+		p.TAG, p.Token, p.getCommandID(), p.CommandID, p.payload, p.Checksum, p.isResponse())
 }
