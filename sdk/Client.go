@@ -89,7 +89,8 @@ func (c *Client) transmitCommand(requestTc *TransmissionContainer, expectRespons
 		}
 		size, err := c.connection.Read(receivedBytesTmp)
 		receivedHexString := string(receivedBytesTmp[0:size])
-		c.log.Debugf("Received bytes: %d\nResponse bytes: %s", size, receivedHexString)
+		c.log.Debugf("Length of received bytes: %d", size)
+		c.log.Debugf("Response bytes: %s", receivedHexString)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read network stream. %v", err)
 		}
