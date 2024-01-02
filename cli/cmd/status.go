@@ -13,10 +13,10 @@ func init() {
 	var devicePort int
 
 	statusCmd := &cobra.Command{
-		Use:    "status",
-		Short:  "Queries the status (open/closed/etc) of your door.",
-		Long:   ``,
-		PreRun: toggleDebug,
+		Use:     StatusCmdUse,
+		Short:   "Queries the status (open/closed/etc) of your door.",
+		Long:    ``,
+		PreRunE: preRunFuncs,
 		Run: func(cmd *cobra.Command, args []string) {
 			deviceMac := viper.GetString(ArgNameDeviceMac)
 			host := viper.GetString(ArgNameHost)

@@ -11,10 +11,10 @@ import (
 
 func init() {
 	usersCmd := &cobra.Command{
-		Use:    "users",
-		Short:  "Manages users defined in your Hörmann BiSecur gateway.",
-		Long:   ``,
-		PreRun: toggleDebug,
+		Use:     UsersCmdUse,
+		Short:   "Manages users defined in your Hörmann BiSecur gateway.",
+		Long:    ``,
+		PreRunE: preRunFuncs,
 		Run: func(cmd *cobra.Command, args []string) {
 			// TODO implement query user list and rights, add and delete user, password change of an already existing user
 

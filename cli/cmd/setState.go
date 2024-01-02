@@ -13,10 +13,10 @@ func init() {
 	var devicePort int
 
 	setStateCmd := &cobra.Command{
-		Use:    "set-state",
-		Short:  "Open or close a door connected to your Hörmann BiSecur gateway.",
-		Long:   ``,
-		PreRun: toggleDebug,
+		Use:     SetStateCmdUse,
+		Short:   "Open or close a door connected to your Hörmann BiSecur gateway.",
+		Long:    ``,
+		PreRunE: preRunFuncs,
 		Run: func(cmd *cobra.Command, args []string) {
 			deviceMac := viper.GetString(ArgNameDeviceMac)
 			host := viper.GetString(ArgNameHost)

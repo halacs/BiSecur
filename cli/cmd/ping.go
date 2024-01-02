@@ -15,10 +15,10 @@ func init() {
 	)
 
 	pingCmd := &cobra.Command{
-		Use:    "ping",
-		Short:  "Check if your Hörmann BiSecur gateway is reachable or not.",
-		Long:   ``,
-		PreRun: toggleDebug,
+		Use:     PingCmdName,
+		Short:   "Check if your Hörmann BiSecur gateway is reachable or not.",
+		Long:    ``,
+		PreRunE: preRunFuncs,
 		Run: func(cmd *cobra.Command, args []string) {
 			deviceMac := viper.GetString(ArgNameDeviceMac)
 			host := viper.GetString(ArgNameHost)

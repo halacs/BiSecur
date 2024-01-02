@@ -12,10 +12,10 @@ import (
 
 func init() {
 	logoutCmd := &cobra.Command{
-		Use:    "logout",
-		Short:  "",
-		Long:   ``,
-		PreRun: toggleDebug,
+		Use:     LogoutCmdName,
+		Short:   "",
+		Long:    ``,
+		PreRunE: preRunFuncs,
 		Run: func(cmd *cobra.Command, args []string) {
 			deviceMac := viper.GetString(ArgNameDeviceMac)
 			host := viper.GetString(ArgNameHost)

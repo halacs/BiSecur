@@ -15,10 +15,10 @@ func init() {
 	)
 
 	discoverCmd := &cobra.Command{
-		Use:    "discover",
-		Short:  "Discover Hörmann BiSecur gateways on the local network",
-		Long:   ``,
-		PreRun: toggleDebug,
+		Use:     "discover",
+		Short:   "Discover Hörmann BiSecur gateways on the local network",
+		Long:    ``,
+		PreRunE: preRunFuncs,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := discover(discoveryTime)
 			if err != nil {

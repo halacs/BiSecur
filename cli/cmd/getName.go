@@ -11,10 +11,10 @@ import (
 
 func init() {
 	getNameCmd := &cobra.Command{
-		Use:    "get-name",
-		Short:  "Queries the name of the Hörmann BiSecur gateway",
-		Long:   ``,
-		PreRun: toggleDebug,
+		Use:     "get-name",
+		Short:   "Queries the name of the Hörmann BiSecur gateway",
+		Long:    ``,
+		PreRunE: preRunFuncs,
 		Run: func(cmd *cobra.Command, args []string) {
 			deviceMac := viper.GetString(ArgNameDeviceMac)
 			host := viper.GetString(ArgNameHost)

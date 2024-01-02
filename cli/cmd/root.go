@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/spf13/viper"
 	"os"
 
@@ -15,10 +16,10 @@ var (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:    "halsecur",
-	Short:  "Application to manage your Hörmann BiSecur gateway without the central cloud directly on your LAN.",
-	Long:   ``,
-	PreRun: toggleDebug,
+	Use:     "halsecur",
+	Short:   "Application to manage your Hörmann BiSecur gateway without the central cloud directly on your LAN.",
+	Long:    ``,
+	PreRunE: preRunFuncs,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
@@ -33,16 +34,6 @@ func Execute() {
 	}
 }
 
-const (
-	ArgNameToken     = "token"
-	ArgNameUsername  = "username"
-	ArgNamePassword  = "password"
-	ArgNameHost      = "host"
-	ArgNamePort      = "port"
-	ArgNameDeviceMac = "mac"
-	ArgNameDebug     = "debug"
-)
-
 func init() {
 	log = newLogger()
 
@@ -54,6 +45,7 @@ func init() {
 		password  string
 		deviceMac string
 		debug     bool
+		autoLogin bool
 	)
 
 	rootCmd.PersistentFlags().Uint32Var(&token, ArgNameToken, 0x0, "Valid authentication token")
@@ -63,6 +55,7 @@ func init() {
 	rootCmd.PersistentFlags().IntVar(&port, ArgNamePort, 4000, "")
 	rootCmd.PersistentFlags().StringVar(&deviceMac, ArgNameDeviceMac, "", "MAC address of the Hörmann BiSecur gateway")
 	rootCmd.PersistentFlags().BoolVar(&debug, ArgNameDebug, true, "debug log level")
+	rootCmd.PersistentFlags().BoolVar(&autoLogin, ArgNameAutoLogin, true, "login automatically on demand")
 
 	viper.SetConfigName("config") // name of config file (without extension)
 	viper.SetConfigType("yaml")   // REQUIRED if the config file does not have the extension in the name
@@ -83,6 +76,17 @@ func init() {
 			log.Errorf("Failed to parse config file. %v", err)
 		}
 	}
+}
+
+func preRunFuncs(cmd *cobra.Command, args []string) error {
+	toggleDebug(cmd, args)
+
+	err := autoLogin(cmd, args)
+	if err != nil {
+		return fmt.Errorf("failed to auto login. %v", err)
+	}
+
+	return nil
 }
 
 func toggleDebug(cmd *cobra.Command, args []string) {

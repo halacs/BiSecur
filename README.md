@@ -12,7 +12,7 @@ If all goes fine, later this repository will provide you both a GoLang SDK and a
 ## TODOs
 * [ ] Create json output for machines. Improve documentation accordingly.
 * [ ] Add retries. `status` command produces `PORT_ERROR` quite frequently while second try works fine.
-* [ ] Improve token handling. Token is stored in `config.yaml` but it seems to be invalidated after a while. It should be renewed on demand.
+* [x] Improve token handling. Token is stored in `config.yaml` but it seems to be invalidated after a while. It should be renewed on demand.
 
 ## Usage
 ```
@@ -35,6 +35,7 @@ Available Commands:
   users       Manages users defined in your Hörmann BiSecur gateway.
 
 Flags:
+      --autologin         login automatically on demand (default true)
       --debug             debug log level (default true)
   -h, --help              help for halsecur
       --host string       IP or host name or the Hörmann BiSecure gateway
