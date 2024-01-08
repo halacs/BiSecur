@@ -1,6 +1,6 @@
 **ABSOLUTELY NO WARRANTY! USE AT YOUR OWN RISK!**
 
-# Hörmann BiSecur Gateway Protocol GoLang SDK
+# Hörmann BiSecur Gateway CLI client and GoLang SDK
 
 Goal is to create a fully fledged replacement client after Hörmann stated end of life of their cloud and android application.
 
@@ -13,6 +13,12 @@ If all goes fine, later this repository will provide you both a GoLang SDK and a
 * [ ] Create json output for machines. Improve documentation accordingly.
 * [x] Add retries. `status` command produces `PORT_ERROR` quite frequently while second try works fine.
 * [x] Improve token handling. Token is stored in `config.yaml` but it seems to be invalidated after a while. It should be renewed on demand.
+* [ ] Create GitHub pipeline for releases
+* [ ] Create new gateway user
+* [ ] Delete gateway user
+* [ ] Change password of a gateway user
+* [ ] Assign new door to the gateway
+* [ ] Delete assigned door from the gateway
 
 ## Usage
 ```
