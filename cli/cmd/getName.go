@@ -52,7 +52,13 @@ func GetName(localMac, mac [6]byte, host string, port int, token uint32) error {
 		}
 	}()
 
-	name, err := client.GetName()
+	var name string
+	err = retry(func() error {
+		var err2 error
+		name, err2 = client.GetName()
+		return err2
+	})
+
 	if err != nil {
 		return err
 	}

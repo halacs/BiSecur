@@ -57,7 +57,11 @@ func setStatus(localMac [6]byte, mac [6]byte, host string, port int, devicePort 
 		}
 	}()
 
-	err = client.SetState(devicePort)
+	err = retry(func() error {
+		err2 := client.SetState(devicePort)
+		return err2
+	})
+
 	if err != nil {
 		return err
 	}

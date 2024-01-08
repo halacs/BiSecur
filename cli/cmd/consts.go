@@ -21,4 +21,5 @@ const (
 	LogoutCmdName             = "logout"
 	PingCmdName               = "ping"
 	TokenExpirationTime       = time.Minute * 5
+	retryCount                = 3
 )

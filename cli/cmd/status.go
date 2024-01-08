@@ -3,6 +3,7 @@ package cmd
 import (
 	"bisecure/cli"
 	"bisecure/sdk"
+	"bisecure/sdk/payload"
 	"github.com/spf13/viper"
 	"os"
 
@@ -57,7 +58,13 @@ func getStatus(localMac [6]byte, mac [6]byte, host string, port int, devicePort 
 		}
 	}()
 
-	status, err := client.GetTransition(devicePort)
+	var status *payload.HmGetTransitionResponse
+	err = retry(func() error {
+		var err2 error
+		status, err2 = client.GetTransition(devicePort)
+		return err2
+	})
+
 	if err != nil {
 		return err
 	}

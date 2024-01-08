@@ -54,7 +54,13 @@ func listGroups(localMac [6]byte, mac [6]byte, host string, port int, token uint
 		}
 	}()
 
-	groups, err := client.GetGroups()
+	var groups *sdk.Groups
+	err = retry(func() error {
+		var err2 error
+		groups, err2 = client.GetGroups()
+		return err2
+	})
+
 	if err != nil {
 		return err
 	}

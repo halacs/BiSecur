@@ -54,7 +54,13 @@ func listUsers(localMac [6]byte, mac [6]byte, host string, port int, token uint3
 		}
 	}()
 
-	users, err := client.GetUsers()
+	var users *sdk.Users
+	err = retry(func() error {
+		var err2 error
+		users, err2 = client.GetUsers()
+		return err2
+	})
+
 	if err != nil {
 		return err
 	}

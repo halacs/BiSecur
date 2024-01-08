@@ -11,7 +11,7 @@ If all goes fine, later this repository will provide you both a GoLang SDK and a
 
 ## TODOs
 * [ ] Create json output for machines. Improve documentation accordingly.
-* [ ] Add retries. `status` command produces `PORT_ERROR` quite frequently while second try works fine.
+* [x] Add retries. `status` command produces `PORT_ERROR` quite frequently while second try works fine.
 * [x] Improve token handling. Token is stored in `config.yaml` but it seems to be invalidated after a while. It should be renewed on demand.
 
 ## Usage
