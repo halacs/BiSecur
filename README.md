@@ -13,7 +13,7 @@ If all goes fine, later this repository will provide you both a GoLang SDK and a
 * [ ] Create json output for machines. Improve documentation accordingly.
 * [x] Add retries. `status` command produces `PORT_ERROR` quite frequently while second try works fine.
 * [x] Improve token handling. Token is stored in `config.yaml` but it seems to be invalidated after a while. It should be renewed on demand.
-* [ ] Create GitHub pipeline for releases
+* [x] Create GitHub pipeline for releases
 * [ ] Create new gateway user
 * [ ] Delete gateway user
 * [ ] Change password of a gateway user
@@ -39,6 +39,7 @@ Available Commands:
   set-state   Open or close a door connected to your Hörmann BiSecur gateway.
   status      Queries the status (open/closed/etc) of your door.
   users       Manages users defined in your Hörmann BiSecur gateway.
+  version     Print version information
 
 Flags:
       --autologin         login automatically on demand (default true)
