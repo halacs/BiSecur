@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"bisecure/cli"
-	"bisecure/sdk"
+	"bisecur/cli"
+	"bisecur/sdk"
 	"github.com/spf13/viper"
 	"os"
 

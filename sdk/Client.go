@@ -1,7 +1,7 @@
 package sdk
 
 import (
-	"bisecure/sdk/payload"
+	"bisecur/sdk/payload"
 	"bytes"
 	"fmt"
 	"github.com/sirupsen/logrus"

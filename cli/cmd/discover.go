@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"bisecure/sdk"
+	"bisecur/sdk"
 	"context"
 	"os"
 	"time"

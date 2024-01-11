@@ -33,4 +33,4 @@ test-short:
 	go test ${VENDOR} -race -short
 
 build: env
-	CGO_ENABLED=0 go build -v -o ${DIST}${APPNAME} .
+	CGO_ENABLED=0 go build -ldflags "-X 'bisecur/cli/cmd.Version=?version?' -X 'bisecur/cli/cmd.BuildDate=?date?'" -v -o ${DIST}${APPNAME} .

@@ -1,4 +1,4 @@
-module bisecure
+module bisecur
 
 go 1.21
 

@@ -1,7 +1,7 @@
 package sdk
 
 import (
-	"bisecure/sdk/payload"
+	"bisecur/sdk/payload"
 	"bytes"
 	"encoding/hex"
 	"testing"

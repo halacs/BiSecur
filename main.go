@@ -1,6 +1,6 @@
 package main
 
-import "bisecure/cli/cmd"
+import "bisecur/cli/cmd"
 
 func main() {
 	cmd.Execute()
