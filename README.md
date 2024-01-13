@@ -9,6 +9,8 @@ If all goes fine, later this repository will provide you both a GoLang SDK and a
 - manage users
 - etc.
 
+![gateway image](gateway.webp)
+
 ## TODOs
 * [ ] Create json output for machines. Improve documentation accordingly.
 * [x] Add retries. `status` command produces `PORT_ERROR` quite frequently while second try works fine.
@@ -31,7 +33,7 @@ Available Commands:
   completion  Generate the autocompletion script for the specified shell
   discover    Discover Hörmann BiSecur gateways on the local network
   get-name    Queries the name of the Hörmann BiSecur gateway
-  groups      Manages users defined in your Hörmann BiSecur gateway.
+  groups      Manages doors defined in your Hörmann BiSecur gateway.
   help        Help about any command
   login       
   logout      
@@ -95,7 +97,7 @@ INFO[2023-12-26T21:00:19+01:00] Token: 0x7974DB57
 
 ### Get users
 ```bash
-$ ./dist/halsecur users
+$ ./dist/halsecur users list
 DEBU[2023-12-26T21:01:38+01:00] Connecting to 192.168.3.232:4000             
 DEBU[2023-12-26T21:01:38+01:00] Request: SrcMAC=0x000000000009, DstMAC=0x5410EC8528BB, BodyLength=0x0, packet=[Tag=0x1, Token=0x7974DB57, CommandID=0x6 (0x6), payload=[Jcmp: {"CMD":"GET_USERS"}], Checksum=0x0, isResponse=false], Checksum=0x0, isResponse: false 
 DEBU[2023-12-26T21:01:38+01:00] Request bytes: 30303030303030303030303935343130454338353238424230303143303137393734444235373036374232323433344434343232334132323437343535343546353535333435353235333232374441314431 
@@ -107,7 +109,7 @@ INFO[2023-12-26T21:01:38+01:00] Users: [ID=0, Name="admin", IsAdmin=true, Groups
 
 ### Get groups
 ```bash
-$ ./dist/halsecur groups
+$ ./dist/halsecur groups list
 DEBU[2023-12-26T21:02:20+01:00] Connecting to 192.168.3.232:4000             
 DEBU[2023-12-26T21:02:20+01:00] Request: SrcMAC=0x000000000009, DstMAC=0x5410EC8528BB, BodyLength=0x0, packet=[Tag=0x1, Token=0x7974DB57, CommandID=0x6 (0x6), payload=[Jcmp: {"CMD":"GET_GROUPS"}], Checksum=0x0, isResponse=false], Checksum=0x0, isResponse: false 
 DEBU[2023-12-26T21:02:20+01:00] Request bytes: 303030303030303030303039353431304543383532384242303031443031373937344442353730363742323234333444343432323341323234373435353435463437353234463535353035333232374446303446 
