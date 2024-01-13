@@ -3,15 +3,22 @@ package cmd
 import (
 	"bisecur/cli"
 	"bisecur/sdk"
+	"fmt"
 	"github.com/spf13/viper"
 	"os"
+	"time"
 
 	"github.com/spf13/cobra"
+)
+
+const (
+	minDalayValue = 500
 )
 
 func init() {
 	var (
 		count int
+		delay int
 	)
 
 	pingCmd := &cobra.Command{
@@ -25,13 +32,19 @@ func init() {
 			port := viper.GetInt(ArgNamePort)
 			token := viper.GetUint32(ArgNameToken)
 
+			// input validation. Try not to do DOS attack against the gateway.
+			if delay < minDalayValue {
+				log.Fatalf("Invalid delay value: %d", delay)
+				os.Exit(1)
+			}
+
 			mac, err := cli.ParesMacString(deviceMac)
 			if err != nil {
 				log.Fatalf("%v", err)
 				os.Exit(1)
 			}
 
-			err = ping(localMac, mac, host, port, count, token)
+			err = ping(localMac, mac, host, port, count, time.Duration(delay)*time.Millisecond, token)
 			if err != nil {
 				log.Fatalf("%v", err)
 				os.Exit(2)
@@ -40,10 +53,11 @@ func init() {
 	}
 	rootCmd.AddCommand(pingCmd)
 
-	pingCmd.Flags().IntVar(&count, "count", 3, "Amount of the ping packages will be sent to the device")
+	pingCmd.Flags().IntVarP(&count, "count", "c", 3, "Number of ping packages")
+	pingCmd.Flags().IntVarP(&delay, "delay", "d", 1000, fmt.Sprintf("Miliseconds between ping packets. Must be at least %d", minDalayValue))
 }
 
-func ping(localMac [6]byte, mac [6]byte, host string, port int, count int, token uint32) error {
+func ping(localMac [6]byte, mac [6]byte, host string, port int, count int, delay time.Duration, token uint32) error {
 	client := sdk.NewClient(log, localMac, mac, host, port, token)
 	err := client.Open()
 	if err != nil {
@@ -57,7 +71,7 @@ func ping(localMac [6]byte, mac [6]byte, host string, port int, count int, token
 		}
 	}()
 
-	err = client.Ping(count)
+	err = client.Ping(count, delay)
 	if err != nil {
 		return err
 	}

@@ -59,16 +59,10 @@ Use "halsecur [command] --help" for more information about a command.
 
 ### Ping
 ```bash
-$ ./halsecur ping --host 192.168.3.232 --mac 54:10:EC:85:28:BB --debug --count 1
-DEBU[2023-12-26T20:58:34+01:00] Connecting to 192.168.3.232:4000             
-DEBU[2023-12-26T20:58:34+01:00] requestTC: SrcMAC=0x000000000009, DstMAC=0x5410EC8528BB, BodyLength=0x0, packet=[Tag=0x1, Token=0x476B2ED2, CommandID=0x0 (0x0), payload=[], Checksum=0x0, isResponse=false], Checksum=0x0, isResponse: false 
-DEBU[2023-12-26T20:58:34+01:00] Request: SrcMAC=0x000000000009, DstMAC=0x5410EC8528BB, BodyLength=0x0, packet=[Tag=0x1, Token=0x476B2ED2, CommandID=0x0 (0x0), payload=[], Checksum=0x0, isResponse=false], Checksum=0x0, isResponse: false 
-DEBU[2023-12-26T20:58:34+01:00] Request bytes: 3030303030303030303030393534313045433835323842423030303930313437364232454432303042434435 
-DEBU[2023-12-26T20:58:34+01:00] Length of received bytes: 44                 
-DEBU[2023-12-26T20:58:34+01:00] Response bytes: 5410EC8528BB000000000006000901476B2ED2803CCB 
-DEBU[2023-12-26T20:58:34+01:00] Received TC: SrcMAC=0x5410EC8528BB, DstMAC=0x000000000006, BodyLength=0x9, packet=[Tag=0x1, Token=0x476B2ED2, CommandID=0x0 (0x80), payload=[], Checksum=0x3C, isResponse=true], Checksum=0xCB, isResponse: true 
-DEBU[2023-12-26T20:58:34+01:00] received 1 packet(s)                         
-DEBU[2023-12-26T20:58:36+01:00] -------------------  
+$ ./halsecur ping --host 192.168.3.232 --mac 54:10:EC:85:28:BB --count 3 --delay 1000
+INFO[2024-01-13T22:36:49+01:00] Response received in 65 ms
+INFO[2024-01-13T22:36:50+01:00] Response received in 64 ms
+INFO[2024-01-13T22:36:51+01:00] Response received in 62 ms
 ```
 
 ### Get device name
