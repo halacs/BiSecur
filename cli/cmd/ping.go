@@ -71,9 +71,22 @@ func ping(localMac [6]byte, mac [6]byte, host string, port int, count int, delay
 		}
 	}()
 
-	err = client.Ping(count, delay)
-	if err != nil {
-		return err
+	received := 0
+	for i := 0; i < count; i++ {
+		sentTimestamp, receivedTimestamp, err := client.Ping()
+
+		if err != nil {
+			log.Errorf("%v", err)
+			continue
+		}
+
+		received = received + 1
+		rtt := receivedTimestamp - sentTimestamp
+		log.Infof("Response %d of %d received in %d ms", received, count, rtt)
+
+		if i < count {
+			time.Sleep(delay)
+		}
 	}
 
 	return nil

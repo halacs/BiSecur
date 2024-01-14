@@ -60,9 +60,9 @@ Use "halsecur [command] --help" for more information about a command.
 ### Ping
 ```bash
 $ ./halsecur ping --host 192.168.3.232 --mac 54:10:EC:85:28:BB --count 3 --delay 1000
-INFO[2024-01-13T22:36:49+01:00] Response received in 65 ms
-INFO[2024-01-13T22:36:50+01:00] Response received in 64 ms
-INFO[2024-01-13T22:36:51+01:00] Response received in 62 ms
+INFO[2024-01-14T10:18:54+01:00] Response 1 of 3 received in 73 ms
+INFO[2024-01-14T10:18:55+01:00] Response 2 of 3 received in 75 ms
+INFO[2024-01-14T10:18:56+01:00] Response 3 of 3 received in 76 ms
 ```
 
 ### Get device name

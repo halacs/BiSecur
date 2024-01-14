@@ -202,11 +202,13 @@ func TestPingOnRealGateway(t *testing.T) {
 		}
 	}()
 
-	err = client.Ping(5)
+	sendTimestamp, receivedTimestamp, err = client.Ping()
 	if err != nil {
 		t.Logf("%v", err)
 		t.Fail()
 	}
+
+	t.Logf("sendTimestamp: %d, receivedTimestamp: %d", sendTimestamp, receivedTimestamp)
 }
 
 func TestLoginOnRealGateway(t *testing.T) {

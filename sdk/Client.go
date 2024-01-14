@@ -147,54 +147,29 @@ func (c *Client) IsOpened() bool {
 	return c.connection != nil
 }
 
-func (c *Client) Ping(count int, delay time.Duration) error {
-	received := 0
+func (c *Client) Ping() (int64, int64, error) {
+	requestTc := c.getTransmissionContainer(COMMANDID_PING, payload.EmptyPayload())
+	c.log.Debugf("requestTC: %v", requestTc)
 
-	for i := 0; i < count; i++ {
-		requestTc := c.getTransmissionContainer(COMMANDID_PING, payload.EmptyPayload())
-		c.log.Debugf("requestTC: %v", requestTc)
+	sendTimestamp := time.Now().UnixMilli()
+	responseTc, err := c.transmitCommandWithResponse(requestTc)
+	receivedTimestamp := time.Now().UnixMilli()
 
-		sendTimestamp := time.Now().UnixMilli()
-		responseTc, err := c.transmitCommandWithResponse(requestTc)
-		receivedTimestamp := time.Now().UnixMilli()
+	c.log.Debugf("responseTC: %v", responseTc)
 
-		c.log.Debugf("responseTC: %v", responseTc)
-
-		if err != nil {
-			//return fmt.Errorf("%v", err)
-			c.log.Errorf("%v", err)
-			continue
-		}
-
-		if responseTc == nil {
-			//return fmt.Errorf("unexpected nil responseTc value")
-			c.log.Errorf("unexpected nil responseTc value")
-			continue
-		}
-
-		if !responseTc.isResponseFor(requestTc) {
-			//return fmt.Errorf("received unexpected packet", responseTc)
-			c.log.Errorf("received unexpected packet")
-			continue
-		}
-
-		received = received + 1
-		c.log.Debugf("received %d packet(s)", received)
-
-		rtt := receivedTimestamp - sendTimestamp
-		c.log.Infof("Response received in %d ms", rtt)
-
-		if i < count {
-			time.Sleep(delay)
-			c.log.Debugf("-------------------")
-		}
+	if err != nil {
+		return sendTimestamp, receivedTimestamp, fmt.Errorf("%v", err)
 	}
 
-	if count != received {
-		return fmt.Errorf("lost packets. Sent: %d, Received: %d, Ration %f", count, received, (float32(received)/float32(count))*100.0)
+	if responseTc == nil {
+		return sendTimestamp, receivedTimestamp, fmt.Errorf("unexpected nil responseTc value")
 	}
 
-	return nil
+	if !responseTc.isResponseFor(requestTc) {
+		return sendTimestamp, receivedTimestamp, fmt.Errorf("received unexpected packet. %v", responseTc)
+	}
+
+	return sendTimestamp, receivedTimestamp, nil
 }
 
 func (c *Client) GetMac() ([6]byte, error) {
