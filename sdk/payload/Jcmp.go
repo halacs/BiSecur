@@ -25,7 +25,8 @@ func (j *Jcmp) Encode() []byte {
 func DecodeJcmpPayload(payloadBytes []byte) (PayloadInterface, error) {
 	return &Jcmp{
 		Payload{
-			data: payloadBytes, // json request/response
+			data:       payloadBytes, // json request/response
+			dataLength: byte(len(payloadBytes)),
 		},
 	}, nil
 }

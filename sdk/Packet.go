@@ -105,6 +105,60 @@ func DecodePacket(packetLength uint16, buffer *bytes.Buffer) (*Packet, error) {
 			return nil, err2
 		}
 		p.payload = pl
+	case COMMANDID_ADD_USER:
+		pl, err2 := payload.DecodeLoginPayload(payloadBytes)
+		if err2 != nil {
+			return nil, err2
+		}
+		p.payload = pl
+	case COMMANDID_ADD_USER_RESPONSE:
+		pl, err2 := payload.DecodeAddUserResponsePayload(payloadBytes)
+		if err2 != nil {
+			return nil, err2
+		}
+		p.payload = pl
+	case COMMANDID_GET_USER_RIGHTS:
+		pl, err2 := payload.DecodeGetUserRightsPayload(payloadBytes)
+		if err2 != nil {
+			return nil, err2
+		}
+		p.payload = pl
+	case COMMANDID_GET_USER_RIGHTS_RESPONSE:
+		pl, err2 := payload.DecodeGetUserRightsResponsePayload(payloadBytes)
+		if err2 != nil {
+			return nil, err2
+		}
+		p.payload = pl
+	case COMMANDID_SET_USER_RIGHTS_RESPONSE:
+		pl, err2 := payload.DecodeSetUserRightsResponsePayload(payloadBytes)
+		if err2 != nil {
+			return nil, err2
+		}
+		p.payload = pl
+	case COMMANDID_SET_USER_RIGHTS:
+		pl, err2 := payload.DecodeSetUserRightsPayload(payloadBytes)
+		if err2 != nil {
+			return nil, err2
+		}
+		p.payload = pl
+	case COMMANDID_REMOVE_USER:
+		pl, err2 := payload.DecodeRemoveUserPayload(payloadBytes)
+		if err2 != nil {
+			return nil, err2
+		}
+		p.payload = pl
+	case COMMANDID_REMOVE_USER_RESPONSE:
+		pl, err2 := payload.DecodeRemoveUserResponsePayload(payloadBytes)
+		if err2 != nil {
+			return nil, err2
+		}
+		p.payload = pl
+	case COMMANDID_CHANGE_PASSWD:
+		pl, err2 := payload.DecodeChangeUserPasswordPayload(payloadBytes)
+		if err2 != nil {
+			return nil, err2
+		}
+		p.payload = pl
 	default:
 		p.payload = payload.EmptyPayload()
 	}

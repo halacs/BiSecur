@@ -410,14 +410,73 @@ func (c *Client) GetTransition(portID byte) (*payload.HmGetTransitionResponse, e
 	return transitionResponse, nil
 }
 
-func (c *Client) AddUser(username string, password string) error {
+func (c *Client) AddUser(userName string, password string) (userId byte, err error) {
+	tc := c.getTransmissionContainer(COMMANDID_ADD_USER, payload.LoginPayload(userName, password))
+	response, err := c.transmitCommandWithResponse(tc)
+	if err != nil {
+		return 0, fmt.Errorf("failed to encode packet. %v", err)
+	}
+
+	if response == nil {
+		return 0, fmt.Errorf("unexpected nil response value")
+	}
+
+	if !response.isResponseFor(tc) {
+		return 0, fmt.Errorf("received unexpected packet: %s", response)
+	}
+
+	transitionResponse := response.Packet.payload.(*payload.AddUserResponse)
+	newUserId := transitionResponse.GetUserId()
+	return newUserId, nil
+}
+
+func (c *Client) RemoveUser(userId byte) error {
+	tc := c.getTransmissionContainer(COMMANDID_REMOVE_USER, payload.RemoveUserPayload(userId))
+	response, err := c.transmitCommandWithResponse(tc)
+	if err != nil {
+		return fmt.Errorf("failed to encode packet. %v", err)
+	}
+
+	if response == nil {
+		return fmt.Errorf("unexpected nil response value")
+	}
+
+	if !response.isResponseFor(tc) {
+		return fmt.Errorf("received unexpected packet: %s", response)
+	}
+
+	transitionResponse := response.Packet.payload.(*payload.RemoveUserResponse)
+	if transitionResponse.GetUserId() != userId {
+		return fmt.Errorf("failed to remove user. %v", transitionResponse)
+	}
+
 	return nil
 }
 
-func (c *Client) DeleteUser(username string) error {
+func (c *Client) PasswordChange(userId byte, newPassword string) error {
+	tc := c.getTransmissionContainer(COMMANDID_CHANGE_PASSWD, payload.ChangeUserPasswordPayload(userId, newPassword))
+	response, err := c.transmitCommandWithResponse(tc)
+	if err != nil {
+		return fmt.Errorf("failed to encode packet. %v", err)
+	}
+
+	if response == nil {
+		return fmt.Errorf("unexpected nil response value")
+	}
+
+	if !response.isResponseFor(tc) {
+		return fmt.Errorf("received unexpected packet: %s", response)
+	}
+
 	return nil
 }
 
-func (c *Client) PasswordChange(username string, newPassword string) error {
+/*
+func (c *Client) SetUserRights(userId byte, ???) error {
 	return nil
 }
+
+func (c *Client) GetUserRights(userId byte, ???) error {
+	return nil
+}
+*/

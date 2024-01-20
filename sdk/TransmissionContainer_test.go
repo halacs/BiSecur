@@ -632,6 +632,256 @@ func TestTransmissionContainerDecode(t *testing.T) {
 				},
 			},
 		},
+		{ // 000000000005 5410EC8528BB 0021 00 884209B7 22 0A7465737A7466686E657631323334353637383930412161 F8 AA
+			Name:         "Add new user",
+			EncodedInput: "0000000000055410EC8528BB002100884209B7220A7465737A7466686E657631323334353637383930412161F8AA",
+			ExpectedDecodedInput: TransmissionContainer{
+				TransmissionContainerPre: TransmissionContainerPre{
+					SrcMac:     [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x05},
+					DstMac:     [6]byte{0x54, 0x10, 0xEC, 0x85, 0x28, 0xBB},
+					BodyLength: 0x21,
+				},
+				Packet: Packet{
+					PacketPre: PacketPre{
+						TAG:       0x00,
+						Token:     uint32(0x884209B7),
+						CommandID: COMMANDID_ADD_USER,
+					},
+					payload: payload.LoginPayload("tesztfhnev", "1234567890A!a"),
+					PacketPost: PacketPost{
+						Checksum: 0xF8,
+					},
+				},
+				TransmissionContainerPost: TransmissionContainerPost{
+					Checksum: 0xAA,
+				},
+			},
+		},
+		{ // 5410EC8528BB 000000000005 000A 00 884209B7 A2 02 38 1B
+			Name:         "Add new user response",
+			EncodedInput: "5410EC8528BB000000000005000A00884209B7A202381B",
+			ExpectedDecodedInput: TransmissionContainer{
+				TransmissionContainerPre: TransmissionContainerPre{
+					SrcMac:     [6]byte{0x54, 0x10, 0xEC, 0x85, 0x28, 0xBB},
+					DstMac:     [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x05},
+					BodyLength: 0x000A,
+				},
+				Packet: Packet{
+					PacketPre: PacketPre{
+						TAG:       0x00,
+						Token:     uint32(0x884209B7),
+						CommandID: COMMANDID_ADD_USER_RESPONSE,
+					},
+					payload: payload.AddUserResponsePayload(0x02),
+					PacketPost: PacketPost{
+						Checksum: 0x38,
+					},
+				},
+				TransmissionContainerPost: TransmissionContainerPost{
+					Checksum: 0x1B,
+				},
+			},
+		},
+		{ // 000000000005 5410EC8528BB 000A 00 884209B7 28 02 BE 2E
+			Name:         "Get user rights",
+			EncodedInput: "0000000000055410EC8528BB000A00884209B72802BE2E",
+			ExpectedDecodedInput: TransmissionContainer{
+				TransmissionContainerPre: TransmissionContainerPre{
+					SrcMac:     [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x05},
+					DstMac:     [6]byte{0x54, 0x10, 0xEC, 0x85, 0x28, 0xBB},
+					BodyLength: 0x000A,
+				},
+				Packet: Packet{
+					PacketPre: PacketPre{
+						TAG:       0x00,
+						Token:     uint32(0x884209B7),
+						CommandID: COMMANDID_GET_USER_RIGHTS,
+					},
+					payload: payload.AddUserResponsePayload(0x02),
+					PacketPost: PacketPost{
+						Checksum: 0xBE,
+					},
+				},
+				TransmissionContainerPost: TransmissionContainerPost{
+					Checksum: 0x2E,
+				},
+			},
+		},
+		{ // 5410EC8528BB 000000000005 000A 00 884209B7 A8 02 3E 2E
+			Name:         "Get user rights response",
+			EncodedInput: "5410EC8528BB000000000005000A00884209B7A8023E2E",
+			ExpectedDecodedInput: TransmissionContainer{
+				TransmissionContainerPre: TransmissionContainerPre{
+					SrcMac:     [6]byte{0x54, 0x10, 0xEC, 0x85, 0x28, 0xBB},
+					DstMac:     [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x05},
+					BodyLength: 0x000A,
+				},
+				Packet: Packet{
+					PacketPre: PacketPre{
+						TAG:       0x00,
+						Token:     uint32(0x884209B7),
+						CommandID: COMMANDID_GET_USER_RIGHTS_RESPONSE, // A8
+					},
+					payload: payload.GetUserRightsResponsePayload(0x02),
+					PacketPost: PacketPost{
+						Checksum: 0x3E,
+					},
+				},
+				TransmissionContainerPost: TransmissionContainerPost{
+					Checksum: 0x2E,
+				},
+			},
+		},
+		{ // 000000000005 5410EC8528BB 000A 00 884209B7 25 02 BB 28
+			Name:         "Set user rights",
+			EncodedInput: "0000000000055410EC8528BB000A00884209B72502BB28",
+			ExpectedDecodedInput: TransmissionContainer{
+				TransmissionContainerPre: TransmissionContainerPre{
+					SrcMac:     [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x05},
+					DstMac:     [6]byte{0x54, 0x10, 0xEC, 0x85, 0x28, 0xBB},
+					BodyLength: 0x000A,
+				},
+				Packet: Packet{
+					PacketPre: PacketPre{
+						TAG:       0x00,
+						Token:     uint32(0x884209B7),
+						CommandID: COMMANDID_SET_USER_RIGHTS,
+					},
+					payload: payload.SetUserRightsPayload(0x02), // TODO what is this good for with only a user ID argument???
+					PacketPost: PacketPost{
+						Checksum: 0xBB,
+					},
+				},
+				TransmissionContainerPost: TransmissionContainerPost{
+					Checksum: 0x28,
+				},
+			},
+		},
+		{ // 5410EC8528BB 000000000005 000B 00 884209B7 A5 02 00 3C 8A
+			Name:         "Set user rights response",
+			EncodedInput: "5410EC8528BB000000000005000B00884209B7A502003C8A",
+			ExpectedDecodedInput: TransmissionContainer{
+				TransmissionContainerPre: TransmissionContainerPre{
+					SrcMac:     [6]byte{0x54, 0x10, 0xEC, 0x85, 0x28, 0xBB},
+					DstMac:     [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x05},
+					BodyLength: 0x000B,
+				},
+				Packet: Packet{
+					PacketPre: PacketPre{
+						TAG:       0x00,
+						Token:     uint32(0x884209B7),
+						CommandID: COMMANDID_SET_USER_RIGHTS_RESPONSE,
+					},
+					payload: payload.SetUserRightsResponsePayload(0x02, 0x00), // TODO find out what is the second argument
+					PacketPost: PacketPost{
+						Checksum: 0x3C,
+					},
+				},
+				TransmissionContainerPost: TransmissionContainerPost{
+					Checksum: 0x8A,
+				},
+			},
+		},
+		{ // 000000000005 5410EC8528BB 000A 00 75730722 24 02 41 F1
+			Name:         "Delete user",
+			EncodedInput: "0000000000055410EC8528BB000A0075730722240241F1",
+			ExpectedDecodedInput: TransmissionContainer{
+				TransmissionContainerPre: TransmissionContainerPre{
+					SrcMac:     [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x05},
+					DstMac:     [6]byte{0x54, 0x10, 0xEC, 0x85, 0x28, 0xBB},
+					BodyLength: 0x000A,
+				},
+				Packet: Packet{
+					PacketPre: PacketPre{
+						TAG:       0x00,
+						Token:     uint32(0x75730722),
+						CommandID: COMMANDID_REMOVE_USER,
+					},
+					payload: payload.RemoveUserPayload(0x02),
+					PacketPost: PacketPost{
+						Checksum: 0x41,
+					},
+				},
+				TransmissionContainerPost: TransmissionContainerPost{
+					Checksum: 0xF1,
+				},
+			},
+		},
+		{ // 5410EC8528BB 000000000005 000A 00 75730722 A4 02 C1 0F
+			Name:         "Delete user response",
+			EncodedInput: "5410EC8528BB000000000005000A0075730722A402C10F",
+			ExpectedDecodedInput: TransmissionContainer{
+				TransmissionContainerPre: TransmissionContainerPre{
+					SrcMac:     [6]byte{0x54, 0x10, 0xEC, 0x85, 0x28, 0xBB},
+					DstMac:     [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x05},
+					BodyLength: 0x000A,
+				},
+				Packet: Packet{
+					PacketPre: PacketPre{
+						TAG:       0x00,
+						Token:     uint32(0x75730722),
+						CommandID: COMMANDID_REMOVE_USER_RESPONSE,
+					},
+					payload: payload.RemoveUserResponsePayload(0x02),
+					PacketPost: PacketPost{
+						Checksum: 0xC1,
+					},
+				},
+				TransmissionContainerPost: TransmissionContainerPost{
+					Checksum: 0x0F,
+				},
+			},
+		},
+		{ // 000000000005 5410EC8528BB 0017 00 75730722 45 0230393837363534333231765621 69 3B
+			Name:         "Change user password",
+			EncodedInput: "0000000000055410EC8528BB00170075730722450230393837363534333231765621693B",
+			ExpectedDecodedInput: TransmissionContainer{
+				TransmissionContainerPre: TransmissionContainerPre{
+					SrcMac:     [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x05},
+					DstMac:     [6]byte{0x54, 0x10, 0xEC, 0x85, 0x28, 0xBB},
+					BodyLength: 0x0017,
+				},
+				Packet: Packet{
+					PacketPre: PacketPre{
+						TAG:       0x00,
+						Token:     uint32(0x75730722),
+						CommandID: COMMANDID_CHANGE_PASSWD,
+					},
+					payload: payload.ChangeUserPasswordPayload(0x02, "0987654321vV!"),
+					PacketPost: PacketPost{
+						Checksum: 0x69,
+					},
+				},
+				TransmissionContainerPost: TransmissionContainerPost{
+					Checksum: 0x3B,
+				},
+			},
+		},
+		{ // 5410EC8528BB 000000000005 0009 00 75730722 C5 DF BE
+			Name:         "Change user password response",
+			EncodedInput: "5410EC8528BB00000000000500090075730722C5DFBE",
+			ExpectedDecodedInput: TransmissionContainer{
+				TransmissionContainerPre: TransmissionContainerPre{
+					SrcMac:     [6]byte{0x54, 0x10, 0xEC, 0x85, 0x28, 0xBB},
+					DstMac:     [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x05},
+					BodyLength: 0x0009,
+				},
+				Packet: Packet{
+					PacketPre: PacketPre{
+						TAG:       0x00,
+						Token:     uint32(0x75730722),
+						CommandID: COMMANDID_CHANGE_PASSWD_RESPONSE,
+					},
+					payload: payload.EmptyPayload(),
+					PacketPost: PacketPost{
+						Checksum: 0xDF,
+					},
+				},
+				TransmissionContainerPost: TransmissionContainerPost{
+					Checksum: 0xBE,
+				},
+			},
+		},
 	}
 
 	for _, testCase := range testCases {

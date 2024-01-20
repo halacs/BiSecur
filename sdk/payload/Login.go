@@ -47,7 +47,8 @@ func LoginPayload(username, password string) PayloadInterface {
 	buffBytes := b.Bytes()
 
 	payload := Payload{
-		data: buffBytes,
+		data:       buffBytes,
+		dataLength: byte(len(buffBytes)),
 	}
 
 	login := &Login{
