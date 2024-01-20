@@ -16,9 +16,9 @@ If all goes fine, later this repository will provide you both a GoLang SDK and a
 * [x] Add retries. `status` command produces `PORT_ERROR` quite frequently while second try works fine.
 * [x] Improve token handling. Token is stored in `config.yaml` but it seems to be invalidated after a while. It should be renewed on demand.
 * [x] Create GitHub pipeline for releases
-* [ ] Create new gateway user
-* [ ] Delete gateway user
-* [ ] Change password of a gateway user
+* [x] Create new gateway user
+* [x] Delete gateway user
+* [x] Change password of a gateway user
 * [ ] Assign new door to the gateway
 * [ ] Delete assigned door from the gateway
 

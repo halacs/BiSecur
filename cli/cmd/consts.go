@@ -3,6 +3,8 @@ package cmd
 import "time"
 
 const (
+	ArgNameUserId             = "uid"
+	ArgNameNewPassword        = "newpassword"
 	ArgNameToken              = "token"
 	ArgNameUsername           = "username"
 	ArgNamePassword           = "password"

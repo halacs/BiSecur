@@ -22,6 +22,8 @@ func init() {
 				log.Fatalf("%v", err)
 				os.Exit(2)
 			}
+
+			log.Infof("Success")
 		},
 	}
 

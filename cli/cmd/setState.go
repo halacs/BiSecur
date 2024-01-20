@@ -34,6 +34,8 @@ func init() {
 				log.Fatalf("%v", err)
 				os.Exit(2)
 			}
+
+			log.Infof("Success")
 		},
 	}
 
@@ -65,8 +67,6 @@ func setStatus(localMac [6]byte, mac [6]byte, host string, port int, devicePort 
 	if err != nil {
 		return err
 	}
-
-	log.Infof("Done")
 
 	return nil
 }
