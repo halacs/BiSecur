@@ -12,6 +12,7 @@ const (
 	ArgNamePort               = "port"
 	ArgNameDeviceMac          = "mac"
 	ArgNameDebug              = "debug"
+	ArgNameJsonOutput         = "json"
 	ArgNameAutoLogin          = "autologin"
 	ArgNameLastLoginTimeStamp = "lastLogin"
 	devicePortName            = "devicePort"

@@ -20,9 +20,6 @@ var rootCmd = &cobra.Command{
 	Short:   "Application to manage your Hörmann BiSecur gateway without the central cloud directly on your LAN.",
 	Long:    ``,
 	PreRunE: preRunFuncs,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -44,8 +41,6 @@ func init() {
 		username  string
 		password  string
 		deviceMac string
-		debug     bool
-		autoLogin bool
 	)
 
 	rootCmd.PersistentFlags().Uint32Var(&token, ArgNameToken, 0x0, "Valid authentication token")
@@ -54,8 +49,9 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&host, ArgNameHost, "", "IP or host name or the Hörmann BiSecure gateway")
 	rootCmd.PersistentFlags().IntVar(&port, ArgNamePort, 4000, "")
 	rootCmd.PersistentFlags().StringVar(&deviceMac, ArgNameDeviceMac, "", "MAC address of the Hörmann BiSecur gateway")
-	rootCmd.PersistentFlags().BoolVar(&debug, ArgNameDebug, true, "debug log level")
-	rootCmd.PersistentFlags().BoolVar(&autoLogin, ArgNameAutoLogin, true, "login automatically on demand")
+	rootCmd.PersistentFlags().Bool(ArgNameDebug, true, "debug log level")
+	rootCmd.PersistentFlags().Bool(ArgNameJsonOutput, false, "use json logging format instead of human readable")
+	rootCmd.PersistentFlags().Bool(ArgNameAutoLogin, true, "login automatically on demand")
 
 	viper.SetConfigName("config") // name of config file (without extension)
 	viper.SetConfigType("yaml")   // REQUIRED if the config file does not have the extension in the name
@@ -79,6 +75,7 @@ func init() {
 }
 
 func preRunFuncs(cmd *cobra.Command, args []string) error {
+	jsonOutput(cmd, args)
 	toggleDebug(cmd, args)
 
 	err := autoLogin(cmd, args)
@@ -95,6 +92,17 @@ func toggleDebug(cmd *cobra.Command, args []string) {
 		log.SetLevel(logrus.DebugLevel)
 	} else {
 		log.SetLevel(logrus.InfoLevel)
+	}
+}
+
+func jsonOutput(cmd *cobra.Command, args []string) {
+	jsonOutput := viper.GetBool(ArgNameJsonOutput)
+	if jsonOutput {
+		jsonFormatter := &logrus.JSONFormatter{
+			PrettyPrint: true,
+		}
+
+		log.SetFormatter(jsonFormatter)
 	}
 }
 
