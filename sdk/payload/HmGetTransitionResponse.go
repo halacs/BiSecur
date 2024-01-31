@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/hex"
-	"fmt"
+	"encoding/json"
 	"time"
 )
 
@@ -52,17 +52,11 @@ func (hgt *HmGetTransitionResponse) Encode() []byte {
 }
 
 func (hgt *HmGetTransitionResponse) String() string {
-	return fmt.Sprintf("HmGetTransitionResponse[StateInPercent: %v, DesiredStateInPerced: %v, Error: %v, AutoClose: %v, DriveTime: %v, Gk: %v, Hcp: %v, Exst: %v, Time: %v]", hgt.StateInPercent,
-		hgt.DesiredStateInPercent,
-		hgt.Error,
-		hgt.AutoClose,
-		hgt.DriveTime,
-		hgt.Gk,
-		hgt.Hcp,
-		hgt.Exst,
-		hgt.Time,
-		//	hgt.IgnoreRetries,
-	)
+	json, err := json.Marshal(hgt)
+	if err != nil {
+		panic(err)
+	}
+	return string(json)
 }
 
 func (hgtr *HmGetTransitionResponse) Equal(o *HmGetTransitionResponse) bool {
