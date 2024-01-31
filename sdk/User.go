@@ -2,7 +2,6 @@ package sdk
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
 type Users []User
@@ -28,7 +27,11 @@ func DecodeUsers(jsonStr string) (Users, error) {
 }
 
 func (u *User) String() string {
-	return fmt.Sprintf("[ID=%d, Name=\"%s\", IsAdmin=%t, Groups:%v]", u.ID, u.Name, u.IsAdmin, u.Groups)
+	json, err := json.Marshal(u)
+	if err != nil {
+		panic(err)
+	}
+	return string(json)
 }
 
 func (users Users) String() string {

@@ -63,7 +63,7 @@ func listUsers(localMac [6]byte, mac [6]byte, host string, port int, token uint3
 		return err
 	}
 
-	log.Infof("Users: %s", users.String())
+	log.Infof("%s", users.String())
 
 	return nil
 }

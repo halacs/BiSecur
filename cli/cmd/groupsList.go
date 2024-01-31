@@ -63,7 +63,7 @@ func listGroups(localMac [6]byte, mac [6]byte, host string, port int, token uint
 		return err
 	}
 
-	log.Infof("Groups: %s", groups.String())
+	log.Infof("%s", groups.String())
 
 	return nil
 }

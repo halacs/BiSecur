@@ -2,7 +2,6 @@ package sdk
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
 type Groups []Group
@@ -27,7 +26,11 @@ func DecodeGroups(jsonStr string) (Groups, error) {
 }
 
 func (g *Group) String() string {
-	return fmt.Sprintf("ID=%d Name=\"%s\" Ports=[%s]", g.ID, g.Name, g.Ports.toString())
+	json, err := json.Marshal(g)
+	if err != nil {
+		panic(err)
+	}
+	return string(json)
 }
 
 func (groups Groups) String() string {
