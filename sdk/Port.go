@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"encoding/json"
 	"fmt"
 )
 
@@ -11,12 +12,20 @@ type Port struct {
 	Type int `json:"type"`
 }
 
-func (p *Port) String() string {
-	portTypeStr, err := PortTypeToString(p.Type)
+func (p *Port) MarshalJSON() ([]byte, error) {
+	typeName, err := PortTypeToString(p.Type)
 	if err != nil {
-		portTypeStr = fmt.Sprintf("%v", err)
+		return nil, err
 	}
-	return fmt.Sprintf("ID=%d Type=%s", p.ID, portTypeStr)
+
+	type Alias Port
+	return json.Marshal(&struct {
+		TypeName string `json:"typeName"`
+		*Alias
+	}{
+		TypeName: typeName,
+		Alias:    (*Alias)(p),
+	})
 }
 
 func PortTypeToString(t int) (string, error) {
@@ -56,12 +65,4 @@ func PortTypeToString(t int) (string, error) {
 	}
 
 	return "", fmt.Errorf("unknown port type value: %d", t)
-}
-
-func (ports Ports) toString() string {
-	s := ""
-	for _, p := range ports {
-		s = s + p.String()
-	}
-	return s
 }

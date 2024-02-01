@@ -34,10 +34,10 @@ func (u *User) String() string {
 	return string(json)
 }
 
-func (users Users) String() string {
-	s := ""
-	for _, u := range users {
-		s = s + u.String()
+func (u *Users) String() string {
+	json, err := json.Marshal(u)
+	if err != nil {
+		panic(err)
 	}
-	return s
+	return string(json)
 }

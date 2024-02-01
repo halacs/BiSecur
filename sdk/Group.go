@@ -25,18 +25,10 @@ func DecodeGroups(jsonStr string) (Groups, error) {
 	return data, nil
 }
 
-func (g *Group) String() string {
-	json, err := json.Marshal(g)
+func (groups Groups) String() string {
+	json, err := json.Marshal(groups)
 	if err != nil {
 		panic(err)
 	}
 	return string(json)
-}
-
-func (groups Groups) String() string {
-	s := ""
-	for _, g := range groups {
-		s = s + g.String()
-	}
-	return s
 }

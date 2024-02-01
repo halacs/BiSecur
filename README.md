@@ -83,19 +83,22 @@ INFO[2024-01-31T21:09:40+01:00] Success
 ### Get users
 ```bash
 $ ./dist/halsecur users list
-INFO[2024-01-31T21:10:20+01:00] Users: [ID=0, Name="admin", IsAdmin=true, Groups:[]][ID=1, Name="app", IsAdmin=false, Groups:[0]]
+INFO[2024-01-31T21:56:53+01:00] [{"id":0,"name":"admin","isAdmin":true,"Groups":[]},{"id":1,"name":"app","isAdmin":false,"Groups":[0]}]
 ```
 
 ### Get groups
 ```bash
 $ ./dist/halsecur groups list
-INFO[2024-01-31T21:10:46+01:00] Groups: ID=0 Name="garazs" Ports=[ID=0 Type=IMPULS]
+INFO[2024-02-01T17:35:32+01:00] [{"id":0,"name":"garazs","ports":[{"typeName":"IMPULS","id":0,"type":1}]}] 
 ```
 
 ### Get door status
 ```bash
 $ ./dist/halsecur status --devicePort 0
-INFO[2024-01-31T21:11:25+01:00] Transition: HmGetTransitionResponse[StateInPercent: 0, DesiredStateInPerced: 0, Error: false, AutoClose: false, DriveTime: 0, Gk: 257, Hcp: HCP[PositionOpen: false, PositionClose: true, OptionRelais: false, LightBarrier: false, Error: false, DrivingToClose: false, Driving: false, HalfOpened: false, ForecastLeadTime: false, Learned: true, NotReferenced: false], Exst: [0 0 0 0 0 0 0 0], Time: 2024-01-31 21:11:25.143422907 +0100 CET m=+1.916999818]
+INFO[2024-02-01T17:34:22+01:00] Token expired. Logging in...                 
+INFO[2024-02-01T17:34:22+01:00] Token: 0xA0A67B43                            
+INFO[2024-02-01T17:34:24+01:00] Transition: {"StateInPercent":0,"DesiredStateInPercent":0,"Error":false,"AutoClose":false,"DriveTime":0,"Gk":257,"Hcp":{"PositionOpen":false,"PositionClose":true,"OptionRelais":false,"LightBarrier":false,"Error":false,"DrivingToClose":false,"Driving":false,"HalfOpened":false,"ForecastLeadTime":false,"Learned":true,"NotReferenced":false},"Exst":"AAAAAAAAAAA=","Time":"2024-02-01T17:34:24.794359108+01:00"} 
+
 ```
 
 ### Open/close door
