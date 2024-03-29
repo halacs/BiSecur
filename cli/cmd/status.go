@@ -69,7 +69,7 @@ func getStatus(localMac [6]byte, mac [6]byte, host string, port int, devicePort 
 		return err
 	}
 
-	log.Infof("Transition: %+v", status)
+	log.WithField("status", status).Infof("Success")
 
 	return nil
 }

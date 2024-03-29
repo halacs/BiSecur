@@ -2,12 +2,13 @@
 
 # Hörmann BiSecur Gateway CLI client and GoLang SDK
 
-Goal is to create a fully fledged replacement client after Hörmann stated end of life of their cloud and android application.
+This command line client (CLI) and software developer kit (SDK) is able to communicate with your Hörmann BiSecur Gateway directly via IP connection.
 
-If all goes fine, later this repository will provide you both a GoLang SDK and a CLI client you can use to
-- open and close your door
-- manage users
-- etc.
+You can discover gateways available on your LAN or you can specify its IP address directly if you are not in the same Layer 2 segment / broadcast domain to discover them. The letter is can be important if you can reach your home network via a Layer 3 VPN connection.
+
+Never ever let your gateway reachable from the public internet, for example, with help of port forward! This gateway is very poor on security to do so! I strongly suggest to keep your gateway reachable only on your secure LAN network. For more details please refer to the sutdy of sec-consult in the links section.
+
+Hörmann officially supported this gateway version until end of 2023 / beginning of 2024.
 
 ![gateway image](gateway.webp)
 
@@ -59,6 +60,29 @@ Flags:
 Use "halsecur [command] --help" for more information about a command.
 ```
 
+### Config file
+`config.yaml` needs to be placed next to the application binary in the same directoy.
+
+Below you can find an example configuration file works for me.
+
+Please replace at least `host`, `mac`, `username` and `password` values to match with your setup.
+
+As far as I know port if always 4000 so most probably it never need to be changed.
+
+```bash
+autologin: true
+debug: false
+host: 192.168.3.232
+json: false
+lastlogin: 1711743671911748
+mac: 54:10:EC:85:28:BB
+password: ADD-YOUR-PASSWORD
+port: 4000
+token: 0
+username: app
+```
+
+
 ### Ping
 ```bash
 $ dist/halsecur ping --host 192.168.3.232 --mac 54:10:EC:85:28:BB --count 3 --delay 1000
@@ -69,36 +93,33 @@ INFO[2024-01-31T21:12:48+01:00] Response 3 of 3 received in 63 ms
 
 ### Get device name
 ```bash
-$ dist/halsecur get-name
-INFO[2024-01-31T21:08:47+01:00] Received name: BiSecur Gateway
+$ ./dist/halsecur get-name
+INFO[2024-03-29T21:20:03+01:00] Success                                       name="BiSecur Gateway"
 ```
 
 ### Login
 ```bash
-$ ./dist/halsecur login --host 192.168.3.232 --mac 54:10:EC:85:28:BB --password Gabor123456789. --username app
-INFO[2024-01-31T21:09:40+01:00] Token: 0x3AC29326
-INFO[2024-01-31T21:09:40+01:00] Success
+$ ./dist/halsecur login
 ```
 
 ### Get users
 ```bash
 $ ./dist/halsecur users list
-INFO[2024-01-31T21:56:53+01:00] [{"id":0,"name":"admin","isAdmin":true,"Groups":[]},{"id":1,"name":"app","isAdmin":false,"Groups":[0]}]
+INFO[2024-03-29T21:20:36+01:00] Success                                       users="[{\"id\":0,\"name\":\"admin\",\"isAdmin\":true,\"Groups\":[]},{\"id\":1,\"name\":\"app\",\"isAdmin\":false,\"Groups\":[0]}]"
 ```
 
 ### Get groups
 ```bash
 $ ./dist/halsecur groups list
-INFO[2024-02-01T17:35:32+01:00] [{"id":0,"name":"garazs","ports":[{"typeName":"IMPULS","id":0,"type":1}]}] 
+INFO[2024-03-29T21:20:55+01:00] [{"id":0,"name":"garazs","ports":[{"typeName":"IMPULS","id":0,"type":1}]}] 
 ```
 
 ### Get door status
 ```bash
 $ ./dist/halsecur status --devicePort 0
-INFO[2024-02-01T17:34:22+01:00] Token expired. Logging in...                 
-INFO[2024-02-01T17:34:22+01:00] Token: 0xA0A67B43                            
-INFO[2024-02-01T17:34:24+01:00] Transition: {"StateInPercent":0,"DesiredStateInPercent":0,"Error":false,"AutoClose":false,"DriveTime":0,"Gk":257,"Hcp":{"PositionOpen":false,"PositionClose":true,"OptionRelais":false,"LightBarrier":false,"Error":false,"DrivingToClose":false,"Driving":false,"HalfOpened":false,"ForecastLeadTime":false,"Learned":true,"NotReferenced":false},"Exst":"AAAAAAAAAAA=","Time":"2024-02-01T17:34:24.794359108+01:00"} 
-
+INFO[2024-03-29T21:21:11+01:00] Token expired. Logging in...                 
+INFO[2024-03-29T21:21:11+01:00] Token: 0x53972BFB                            
+INFO[2024-03-29T21:21:12+01:00] Success                                       status="{\"StateInPercent\":0,\"DesiredStateInPercent\":0,\"Error\":false,\"AutoClose\":false,\"DriveTime\":0,\"Gk\":257,\"Hcp\":{\"PositionOpen\":false,\"PositionClose\":true,\"OptionRelais\":false,\"LightBarrier\":false,\"Error\":false,\"DrivingToClose\":false,\"Driving\":false,\"HalfOpened\":false,\"ForecastLeadTime\":false,\"Learned\":true,\"NotReferenced\":false},\"Exst\":\"AAAAAAAAAAA=\",\"Time\":\"2024-03-29T21:21:12.719862537+01:00\"}"
 ```
 
 ### Open/close door
@@ -106,42 +127,21 @@ Door is fully closed. Start to open it:
 
 ```bash
 $ ./dist/halsecur set-state --devicePort 0
-DEBU[2023-12-26T21:04:33+01:00] Connecting to 192.168.3.232:4000             
-DEBU[2023-12-26T21:04:33+01:00] Request: SrcMAC=0x000000000009, DstMAC=0x5410EC8528BB, BodyLength=0x0, packet=[Tag=0x1, Token=0x7974DB57, CommandID=0x33 (0x33), payload=[SetState], Checksum=0x0, isResponse=false], Checksum=0x0, isResponse: false 
-DEBU[2023-12-26T21:04:33+01:00] Request bytes: 303030303030303030303039353431304543383532384242303030423031373937344442353733333030464635444331 
-DEBU[2023-12-26T21:04:34+01:00] Length of received bytes: 76                 
-DEBU[2023-12-26T21:04:34+01:00] Response bytes: 5410EC8528BB00000000000600190100000000F0000000040101020200000000000000001483 
-DEBU[2023-12-26T21:04:34+01:00] Received TC: SrcMAC=0x5410EC8528BB, DstMAC=0x000000000006, BodyLength=0x19, packet=[Tag=0x1, Token=0x0, CommandID=0x70 (0xF0), payload=[HmGetTransitionResponse[StateInPercent: 0, DesiredStateInPerced: 0, Error: false, AutoClose: false, DriveTime: 4, Gk: 257, Hcp: HCP[PositionOpen: false, PositionClose: true, OptionRelais: false, LightBarrier: false, Error: false, DrivingToClose: false, Driving: false, HalfOpened: false, ForecastLeadTime: false, Learned: true, NotReferenced: false], Exst: [0 0 0 0 0 0 0 0], Time: 2023-12-26 21:04:34.436781605 +0100 CET m=+0.770579311]], Checksum=0x14, isResponse=true], Checksum=0x83, isResponse: true 
-DEBU[2023-12-26T21:04:34+01:00] Set State response: SrcMAC=0x5410EC8528BB, DstMAC=0x000000000006, BodyLength=0x19, packet=[Tag=0x1, Token=0x0, CommandID=0x70 (0xF0), payload=[HmGetTransitionResponse[StateInPercent: 0, DesiredStateInPerced: 0, Error: false, AutoClose: false, DriveTime: 4, Gk: 257, Hcp: HCP[PositionOpen: false, PositionClose: true, OptionRelais: false, LightBarrier: false, Error: false, DrivingToClose: false, Driving: false, HalfOpened: false, ForecastLeadTime: false, Learned: true, NotReferenced: false], Exst: [0 0 0 0 0 0 0 0], Time: 2023-12-26 21:04:34.436781605 +0100 CET m=+0.770579311]], Checksum=0x14, isResponse=true], Checksum=0x83, isResponse: true 
-INFO[2023-12-26T21:04:34+01:00] Done        
+INFO[2024-03-29T21:22:00+01:00] Success
 ```
 
 Door is opening. Stop it in a half-open position:
 
 ```Bash
 $ ./dist/halsecur set-state --devicePort 0
-DEBU[2023-12-26T21:04:43+01:00] Connecting to 192.168.3.232:4000             
-DEBU[2023-12-26T21:04:43+01:00] Request: SrcMAC=0x000000000009, DstMAC=0x5410EC8528BB, BodyLength=0x0, packet=[Tag=0x1, Token=0x7974DB57, CommandID=0x33 (0x33), payload=[SetState], Checksum=0x0, isResponse=false], Checksum=0x0, isResponse: false 
-DEBU[2023-12-26T21:04:43+01:00] Request bytes: 303030303030303030303039353431304543383532384242303030423031373937344442353733333030464635444331 
-DEBU[2023-12-26T21:04:43+01:00] Length of received bytes: 76                 
-DEBU[2023-12-26T21:04:43+01:00] Response bytes: 5410EC8528BB00000000000600190100000000F00000000401014C0200000000000000005EAD 
-DEBU[2023-12-26T21:04:43+01:00] Received TC: SrcMAC=0x5410EC8528BB, DstMAC=0x000000000006, BodyLength=0x19, packet=[Tag=0x1, Token=0x0, CommandID=0x70 (0xF0), payload=[HmGetTransitionResponse[StateInPercent: 0, DesiredStateInPerced: 0, Error: false, AutoClose: false, DriveTime: 4, Gk: 257, Hcp: HCP[PositionOpen: false, PositionClose: false, OptionRelais: true, LightBarrier: true, Error: false, DrivingToClose: false, Driving: true, HalfOpened: false, ForecastLeadTime: false, Learned: true, NotReferenced: false], Exst: [0 0 0 0 0 0 0 0], Time: 2023-12-26 21:04:43.979174613 +0100 CET m=+0.807240492]], Checksum=0x5E, isResponse=true], Checksum=0xAD, isResponse: true 
-DEBU[2023-12-26T21:04:43+01:00] Set State response: SrcMAC=0x5410EC8528BB, DstMAC=0x000000000006, BodyLength=0x19, packet=[Tag=0x1, Token=0x0, CommandID=0x70 (0xF0), payload=[HmGetTransitionResponse[StateInPercent: 0, DesiredStateInPerced: 0, Error: false, AutoClose: false, DriveTime: 4, Gk: 257, Hcp: HCP[PositionOpen: false, PositionClose: false, OptionRelais: true, LightBarrier: true, Error: false, DrivingToClose: false, Driving: true, HalfOpened: false, ForecastLeadTime: false, Learned: true, NotReferenced: false], Exst: [0 0 0 0 0 0 0 0], Time: 2023-12-26 21:04:43.979174613 +0100 CET m=+0.807240492]], Checksum=0x5E, isResponse=true], Checksum=0xAD, isResponse: true 
-INFO[2023-12-26T21:04:43+01:00] Done
+INFO[2024-03-29T21:22:07+01:00] Success
 ```
 
 Door is half-opened. Close it back:
 
 ```Bash
 $ ./dist/halsecur set-state --devicePort 0
-DEBU[2023-12-26T21:04:47+01:00] Connecting to 192.168.3.232:4000             
-DEBU[2023-12-26T21:04:47+01:00] Request: SrcMAC=0x000000000009, DstMAC=0x5410EC8528BB, BodyLength=0x0, packet=[Tag=0x1, Token=0x7974DB57, CommandID=0x33 (0x33), payload=[SetState], Checksum=0x0, isResponse=false], Checksum=0x0, isResponse: false 
-DEBU[2023-12-26T21:04:47+01:00] Request bytes: 303030303030303030303039353431304543383532384242303030423031373937344442353733333030464635444331 
-DEBU[2023-12-26T21:04:48+01:00] Length of received bytes: 76                 
-DEBU[2023-12-26T21:04:48+01:00] Response bytes: 5410EC8528BB00000000000600190100000000F00000000401010C0200000000000000001EA5 
-DEBU[2023-12-26T21:04:48+01:00] Received TC: SrcMAC=0x5410EC8528BB, DstMAC=0x000000000006, BodyLength=0x19, packet=[Tag=0x1, Token=0x0, CommandID=0x70 (0xF0), payload=[HmGetTransitionResponse[StateInPercent: 0, DesiredStateInPerced: 0, Error: false, AutoClose: false, DriveTime: 4, Gk: 257, Hcp: HCP[PositionOpen: false, PositionClose: false, OptionRelais: true, LightBarrier: true, Error: false, DrivingToClose: false, Driving: false, HalfOpened: false, ForecastLeadTime: false, Learned: true, NotReferenced: false], Exst: [0 0 0 0 0 0 0 0], Time: 2023-12-26 21:04:48.329008833 +0100 CET m=+0.781378758]], Checksum=0x1E, isResponse=true], Checksum=0xA5, isResponse: true 
-DEBU[2023-12-26T21:04:48+01:00] Set State response: SrcMAC=0x5410EC8528BB, DstMAC=0x000000000006, BodyLength=0x19, packet=[Tag=0x1, Token=0x0, CommandID=0x70 (0xF0), payload=[HmGetTransitionResponse[StateInPercent: 0, DesiredStateInPerced: 0, Error: false, AutoClose: false, DriveTime: 4, Gk: 257, Hcp: HCP[PositionOpen: false, PositionClose: false, OptionRelais: true, LightBarrier: true, Error: false, DrivingToClose: false, Driving: false, HalfOpened: false, ForecastLeadTime: false, Learned: true, NotReferenced: false], Exst: [0 0 0 0 0 0 0 0], Time: 2023-12-26 21:04:48.329008833 +0100 CET m=+0.781378758]], Checksum=0x1E, isResponse=true], Checksum=0xA5, isResponse: true 
-INFO[2023-12-26T21:04:48+01:00] Done
+INFO[2024-03-29T21:22:42+01:00] Success 
 ```
 
 ## Acknowledgement
@@ -151,6 +151,14 @@ Thanks for [SEC Consult](https://sec-consult.com/blog/detail/hoermann-opening-do
 Based on the above study someone could create a [Kotlin SDK](https://github.com/bisdk/sdk) which also helped me a lot.
 
 Taken into consideration that Hörmann will stop their cloud required for BiSecur Gateway usages from 2024, I asked Hörmann support to publish their protocol already leaked in above repositories, but they stated that this code is impossible to write.
+
+## Contribution
+
+Please feel free to implement the missing commands in the SDK or in the CLI application.
+
+When you are done with it please raise a pull request. I will do my best to merge to the upstram as soon as possible.
+
+Whenever you raise a pull request please try to keep test coverage as high as possible and describe clearly what is the feature you have implemented and how you tested it.
 
 ## Disclaimer
 

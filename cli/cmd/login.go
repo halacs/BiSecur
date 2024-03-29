@@ -23,7 +23,7 @@ func init() {
 				os.Exit(2)
 			}
 
-			log.Infof("Success")
+			log.Infof("Successful login")
 		},
 	}
 

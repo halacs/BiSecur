@@ -63,7 +63,7 @@ func GetName(localMac, mac [6]byte, host string, port int, token uint32) error {
 		return err
 	}
 
-	log.Infof("Received name: %s", name)
+	log.WithField("name", name).Infof("Success")
 
 	return nil
 }
