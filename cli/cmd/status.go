@@ -41,6 +41,6 @@ func init() {
 
 	rootCmd.AddCommand(statusCmd)
 
-	statusCmd.Flags().IntVar(&devicePort, devicePortName, 0, "Port number of the door")
-	statusCmd.MarkFlagsOneRequired(devicePortName)
+	statusCmd.Flags().IntVar(&devicePort, ArgDevicePortName, 0, "Port number of the door")
+	statusCmd.MarkFlagsOneRequired(ArgDevicePortName)
 }

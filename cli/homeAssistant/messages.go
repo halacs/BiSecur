@@ -26,10 +26,9 @@ func (ha *HomeAssistanceMqttClient) autoLogin() error {
 
 func (ha *HomeAssistanceMqttClient) getDiscoveryMessage() (string, error) {
 	name := ha.getUniqueObjectId()
-	uniqueId := name
-	commandTopic := "halsecur/cmnd/garage/position"
-	positionTopic := "halsecur/garage/position"
-	tiltStatusTopic := "halsecur/garage/tilt_status"
+	uniqueId := ha.getUniqueObjectId()
+	commandTopic := ha.getSetPositionTopic()
+	positionTopic := ha.getPositionTopicName()
 
 	messageTemplate := `
 			{
@@ -38,7 +37,6 @@ func (ha *HomeAssistanceMqttClient) getDiscoveryMessage() (string, error) {
 			"device_class": "garage",
 			"command_topic": "%s",
 			"position_topic": "%s",
-			"tilt_status_topic": "%s",
 			"device": {
     			"identifiers": ["%s"],
 			    "name": "%s"
@@ -48,7 +46,7 @@ func (ha *HomeAssistanceMqttClient) getDiscoveryMessage() (string, error) {
 			"payload_not_available": "%s"
 			}`
 
-	message := fmt.Sprintf(messageTemplate, name, uniqueId, commandTopic, positionTopic, tiltStatusTopic, uniqueId, name, ha.getAvailabilityTopic(), ha.getAvabilityMessage(true), ha.getAvabilityMessage(false))
+	message := fmt.Sprintf(messageTemplate, name, uniqueId, commandTopic, positionTopic, uniqueId, name, ha.getAvailabilityTopic(), ha.getAvabilityMessage(true), ha.getAvabilityMessage(false))
 	return message, nil
 }
 

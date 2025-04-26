@@ -36,9 +36,8 @@ type HomeAssistanceMqttClient struct {
 	mqttPassword           string
 	mqttTelePeriod         time.Duration
 	devicePort             byte
-	//device                 *Device
-	log        *logrus.Logger
-	mqttClient mqtt.Client
+	log                    *logrus.Logger
+	mqttClient             mqtt.Client
 }
 
 func NewHomeAssistanceMqttClient(log *logrus.Logger, localMac [6]byte, deviceMac [6]byte, deviceUsername string, devicePassword string, host string, port int, token uint32, mqttServerName string, mqttClientId string,
