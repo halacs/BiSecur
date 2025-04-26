@@ -26,5 +26,5 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           goos: ${{ matrix.goos }}
           goarch: ${{ matrix.goarch }}
-          ldflags: "-X 'bisecur/cli/cmd.Version=${{  github.ref_name }}' -X 'bisecur/cli/cmd.BuildDate=${{ steps.date.outputs.date }}'"
+          ldflags: "-X 'bisecur/version.Version=${{  github.ref_name }}' -X 'bisecur/version.BuildDate=${{ steps.date.outputs.date }}'"
           #extra_files: LICENSE README.md

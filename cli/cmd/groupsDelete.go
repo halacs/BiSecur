@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bisecur/cli"
 	"github.com/spf13/cobra"
 )
 
@@ -10,7 +11,7 @@ var groupsDeleteCmd = &cobra.Command{
 	Long:    `Delete a gateway group`,
 	PreRunE: preRunFuncs,
 	Run: func(cmd *cobra.Command, args []string) {
-		log.Fatalf("Not implemented yet")
+		cli.Log.Fatalf("Not implemented yet")
 	},
 }
 

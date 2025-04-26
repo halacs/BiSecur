@@ -1,8 +1,8 @@
 DIST=dist/
 APPNAME=halsecur
 
-GOLANGCILINT_VERSION=v1.55.2
-GOSEC_VERSION=v2.18.2
+GOLANGCILINT_VERSION=v2.1.5
+GOSEC_VERSION=v2.22.3
 VULNCHECK_VERSION=latest
 
 all: clean build
@@ -15,7 +15,7 @@ clean:
 
 lint-env:
 	( which gosec &>/dev/zero && gosec --version | grep -qs $(GOSEC_VERSION) ) || go install github.com/securego/gosec/v2/cmd/gosec@$(GOSEC_VERSION)
-	( which golangci-lint &>/dev/zero && golangci-lint --version | grep -qs $(GOLANGCILINT_VERSION) ) || go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCILINT_VERSION)
+	( which golangci-lint &>/dev/zero && golangci-lint --version | grep -qs $(GOLANGCILINT_VERSION) ) || go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCILINT_VERSION)
 	( which govulncheck &>/dev/zero ) || go install golang.org/x/vuln/cmd/govulncheck@$(VULNCHECK_VERSION)
 
 lint: lint-env
@@ -33,4 +33,4 @@ test-short:
 	go test ${VENDOR} -race -short
 
 build: env
-	CGO_ENABLED=0 go build -ldflags "-X 'bisecur/cli/cmd.Version=?version?' -X 'bisecur/cli/cmd.BuildDate=?date?'" -v -o ${DIST}${APPNAME} .
+	CGO_ENABLED=0 go build -ldflags "-X 'bisecur/version.Version=?version?' -X 'bisecur/version.BuildDate=?date?'" -v -o ${DIST}${APPNAME} .

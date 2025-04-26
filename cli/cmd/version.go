@@ -1,14 +1,10 @@
 package cmd
 
 import (
+	"bisecur/version"
 	"fmt"
 
 	"github.com/spf13/cobra"
-)
-
-var (
-	Version   string
-	BuildDate string
 )
 
 // versionCmd represents the version command
@@ -17,7 +13,7 @@ var versionCmd = &cobra.Command{
 	Short: "Print version information",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Version: %s\nBuilt: %s\n", Version, BuildDate)
+		fmt.Printf("Version: %s\nBuilt: %s\n", version.Version, version.BuildDate)
 	},
 }
 

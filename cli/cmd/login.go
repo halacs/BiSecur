@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"bisecur/cli"
-	"bisecur/sdk"
+	"bisecur/cli/bisecur"
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -19,11 +19,11 @@ func init() {
 		Run: func(cmd *cobra.Command, args []string) {
 			err := loginCmdFunc()
 			if err != nil {
-				log.Fatalf("%v", err)
+				cli.Log.Fatalf("%v", err)
 				os.Exit(2)
 			}
 
-			log.Infof("Successful login")
+			cli.Log.Infof("Successful login")
 		},
 	}
 
@@ -42,12 +42,12 @@ func loginCmdFunc() error {
 		return err
 	}
 
-	token, err := login(localMac, mac, host, port, username, password)
+	token, err := bisecur.Login(localMac, mac, host, port, username, password)
 	if err != nil {
 		return err
 	}
 
-	log.Infof("Token: 0x%X", token)
+	cli.Log.Infof("Token: 0x%X", token)
 
 	// Store token in persistent config
 	viper.Set(ArgNameToken, token)
@@ -58,26 +58,4 @@ func loginCmdFunc() error {
 	}
 
 	return nil
-}
-
-func login(localMac [6]byte, mac [6]byte, host string, port int, username string, password string) (uint32, error) {
-	client := sdk.NewClient(log, localMac, mac, host, port, 0)
-	err := client.Open()
-	if err != nil {
-		return 0, err
-	}
-
-	defer func() {
-		err2 := client.Close()
-		if err2 != nil {
-			log.Errorf("%v", err)
-		}
-	}()
-
-	err = client.Login(username, password)
-	if err != nil {
-		return 0, err
-	}
-
-	return client.GetToken(), nil
 }

@@ -1,7 +1,5 @@
 package cmd
 
-import "time"
-
 const (
 	ArgNameUserId             = "uid"
 	ArgNameNewPassword        = "newpassword"
@@ -21,8 +19,7 @@ const (
 	SetStateCmdUse            = "set-state"
 	GroupsCmdName             = "groups"
 	LoginCmdName              = "login"
-	LogoutCmdName             = "logout"
+	LogoutCmdName             = "Logout"
 	PingCmdName               = "ping"
-	TokenExpirationTime       = time.Minute * 5
-	retryCount                = 3
+	HomeAssistantCmdName      = "ha"
 )

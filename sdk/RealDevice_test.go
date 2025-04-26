@@ -321,7 +321,7 @@ func TestDiscoveryOnRealGateway(t *testing.T) {
 	time.Sleep(time.Second * 20)
 
 	list := discovery.GetList()
-	t.Logf("list: %+v", list)
+	t.Logf("groups: %+v", list)
 
 	t.Logf("Stop disovery...")
 	discovery.Stop()
