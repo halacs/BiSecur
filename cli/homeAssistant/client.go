@@ -3,17 +3,21 @@ package homeAssistant
 import (
 	"bisecur/cli/homeAssistant/mockDoor"
 	"bisecur/cli/utils"
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/sirupsen/logrus"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
 const (
-	qos = byte(1)
+	qosAtLeastOnce = byte(1)
 )
 
 type HomeAssistanceMqttClient struct {
@@ -95,17 +99,17 @@ func (ha *HomeAssistanceMqttClient) Start() error {
 
 			switch command {
 			case "CLOSE":
-				err := closeDoor()
+				err := ha.closeDoor()
 				if err != nil {
 					ha.log.Errorf("failed to close door. %v", err)
 				}
 			case "OPEN":
-				err := openDoor()
+				err := ha.openDoor()
 				if err != nil {
 					ha.log.Errorf("failed to open door. %v", err)
 				}
 			case "STOP":
-				err := stopDoor()
+				err := ha.stopDoor()
 				if err != nil {
 					ha.log.Errorf("failed to stop door. %v", err)
 				}
@@ -133,15 +137,27 @@ func (ha *HomeAssistanceMqttClient) Start() error {
 	tlsConfig := ha.newTlsConfig()
 	opts.SetTLSConfig(tlsConfig)
 	opts.SetAutoReconnect(true)
+
 	// Configure offline availability message
-	opts.SetWill(ha.getAvailabilityTopic(), ha.getAvabilityMessage(false), qos, true)
+	opts.SetWill(ha.getAvailabilityTopic(), ha.getAvabilityMessage(false), qosAtLeastOnce, true)
 
 	ha.mqttClient = mqtt.NewClient(opts)
 	mqttToken := ha.mqttClient.Connect()
 	if mqttToken.Wait() && mqttToken.Error() != nil {
 		log.Fatalf("Failed to connect MQTT server. %v", mqttToken.Error())
 	}
-	defer ha.mqttClient.Disconnect(250)
+	defer func() {
+		ha.log.Debugf("Disconnecting from MQTT server")
+
+		err := ha.PublishAvabilityMessage(false)
+		if err != nil {
+			ha.log.Errorf("failed to publish availability message (offline). %v", err)
+		}
+
+		ha.mqttClient.Disconnect(250)
+
+		ha.log.Infof("Disconnected from MQTT server")
+	}()
 
 	// Subscribe to home assistant's status topic (get notification when HA restarts)
 	ha.mqttClient.Subscribe(utils.HomeAssistantStatusTopic, 0, homeAssistantStatusMessagePubHandler)
@@ -158,25 +174,34 @@ func (ha *HomeAssistanceMqttClient) Start() error {
 	}
 
 	// Configure availability
-	err = ha.PublishAvabilityMessage()
+	err = ha.PublishAvabilityMessage(true)
 	if err != nil {
-		ha.log.Errorf("failed to publish availability message. %v", err)
+		ha.log.Errorf("failed to publish availability message (online). %v", err)
 	}
 
 	mockDoor.StartTicker()
 
+	if ha.mqttTelePeriod < 5*time.Second { // ensure minimum tele period to avoid flooding the Hormann gateway
+		ha.mqttTelePeriod = 10 * time.Second
+		ha.log.Warnf("Tele period is too small. Set to %v", ha.mqttTelePeriod)
+	}
 	ticker := time.NewTicker(ha.mqttTelePeriod)
-	done := make(chan bool)
+	done, _ := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill, syscall.SIGTERM, syscall.SIGINT)
 
+out:
 	for {
 		select {
-		case <-done:
-			return nil
+		case <-done.Done():
+			ha.log.Infof("Exiting")
+			break out
 		case <-ticker.C:
-			//fmt.Println("Tick at", t)
+			ha.log.Tracef("Publish current door status")
 
-			position := mockDoor.GetPosition()
-			direction := mockDoor.GetDirection()
+			direction, position, err := ha.getDoorStatus()
+			if err != nil {
+				ha.log.Errorf("failed to get door status. %v", err)
+				continue
+			}
 
 			state := utils.UNKNOWN
 			if position == 0 {
@@ -185,25 +210,28 @@ func (ha *HomeAssistanceMqttClient) Start() error {
 				state = utils.OPEN
 			}
 
-			err := ha.PublishCurrentDoorStatus(position, direction, state)
+			err = ha.PublishCurrentDoorStatus(position, direction, state)
 			if err != nil {
 				ha.log.Errorf("failed to publish current door status. %v", err)
 			}
 		}
 	}
 
-	//return nil
+	return nil
 }
 
 func (ha *HomeAssistanceMqttClient) PublishCurrentDoorStatus(position int, direction string, state string) error {
-	retained := false
-
-	mqttToken := ha.mqttClient.Publish(ha.getGetStateTopicName(), qos, retained, state)
+	mqttToken := ha.mqttClient.Publish(ha.getGetStateTopicName(), qosAtLeastOnce, false, state)
 	if mqttToken.Wait() && mqttToken.Error() != nil {
 		return fmt.Errorf("failed to publish discovery message. %v", mqttToken.Error())
 	}
 
-	mqttToken = ha.mqttClient.Publish(ha.getPositionTopicName(), qos, retained, fmt.Sprintf("%d", position))
+	mqttToken = ha.mqttClient.Publish(ha.getPositionTopicName(), qosAtLeastOnce, false, fmt.Sprintf("%d", position))
+	if mqttToken.Wait() && mqttToken.Error() != nil {
+		return fmt.Errorf("failed to publish discovery message. %v", mqttToken.Error())
+	}
+
+	mqttToken = ha.mqttClient.Publish(ha.getDirectionTopicName(), qosAtLeastOnce, false, direction)
 	if mqttToken.Wait() && mqttToken.Error() != nil {
 		return fmt.Errorf("failed to publish discovery message. %v", mqttToken.Error())
 	}
@@ -211,11 +239,16 @@ func (ha *HomeAssistanceMqttClient) PublishCurrentDoorStatus(position int, direc
 	return nil
 }
 
-func (ha *HomeAssistanceMqttClient) PublishAvabilityMessage() error {
-	message := utils.ONLINE
+func (ha *HomeAssistanceMqttClient) PublishAvabilityMessage(online bool) error {
+	var message string
 
-	retained := false
-	mqttToken := ha.mqttClient.Publish(ha.getAvailabilityTopic(), qos, retained, message)
+	if online {
+		message = utils.ONLINE
+	} else {
+		message = utils.OFFLINE
+	}
+
+	mqttToken := ha.mqttClient.Publish(ha.getAvailabilityTopic(), qosAtLeastOnce, true, message)
 	if mqttToken.Wait() && mqttToken.Error() != nil {
 		return fmt.Errorf("failed to publish avability message. %v", mqttToken.Error())
 	}
@@ -229,8 +262,7 @@ func (ha *HomeAssistanceMqttClient) PublishDiscoveryMessage() error {
 		return fmt.Errorf("failed to generate discovery message. %v", err)
 	}
 
-	retained := true
-	mqttToken := ha.mqttClient.Publish(ha.getDiscoveryTopic(), qos, retained, discoveryMsg)
+	mqttToken := ha.mqttClient.Publish(ha.getDiscoveryTopic(), qosAtLeastOnce, true, discoveryMsg)
 	if mqttToken.Wait() && mqttToken.Error() != nil {
 		return fmt.Errorf("failed to publish discovery message. %v", mqttToken.Error())
 	}

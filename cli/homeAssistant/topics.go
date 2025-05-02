@@ -13,6 +13,10 @@ func (ha *HomeAssistanceMqttClient) getSetPositionTopic() string {
 	return fmt.Sprintf("%s/cmnd/%s/position", ha.mqttBaseTopic, ha.mqttDeviceName)
 }
 
+func (ha *HomeAssistanceMqttClient) getDirectionTopicName() string {
+	return fmt.Sprintf("%s/%s/direction", ha.mqttBaseTopic, ha.mqttDeviceName)
+}
+
 func (ha *HomeAssistanceMqttClient) getGetStateTopicName() string {
 	return fmt.Sprintf("%s/%s/state", ha.mqttBaseTopic, ha.mqttDeviceName)
 }
