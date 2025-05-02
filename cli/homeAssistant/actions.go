@@ -31,29 +31,30 @@ func (ha *HomeAssistanceMqttClient) autoLoginBisecur() error {
 	return nil
 }
 
-func (ha *HomeAssistanceMqttClient) setStateBisecurMultiCall(count int) error {
-	for i := 0; i < count; i++ {
-		ha.log.Debugf("Setting door state %d/%d", i+1, count)
+/*
+	func (ha *HomeAssistanceMqttClient) setStateBisecurMultiCall(count int) error {
+		for i := 0; i < count; i++ {
+			ha.log.Debugf("Setting door state %d/%d", i+1, count)
 
-		err := ha.autoLoginBisecur()
-		if err != nil {
-			return fmt.Errorf("failed to auto login. %v", err)
-		}
+			err := ha.autoLoginBisecur()
+			if err != nil {
+				return fmt.Errorf("failed to auto login. %v", err)
+			}
 
-		err = bisecur.SetState(ha.localMac, ha.deviceMac, ha.host, ha.port, ha.devicePort, ha.token)
-		if err != nil {
-			return fmt.Errorf("failed to get door status. %v", err)
-		}
+			err = bisecur.SetState(ha.localMac, ha.deviceMac, ha.host, ha.port, ha.devicePort, ha.token)
+			if err != nil {
+				return fmt.Errorf("failed to get door status. %v", err)
+			}
 
-		if i < count-1 {
-			const delayDuration = 1000 * time.Millisecond
-			ha.log.Debugf("Waiting for %d ms before the next call...", delayDuration)
-			time.Sleep(delayDuration) // wait for 1 second before the next door call to avoid overloading the Hormann bisecur gateway
+			if i < count-1 {
+				const delayDuration = 1000 * time.Millisecond
+				ha.log.Debugf("Waiting for %d ms before the next call...", delayDuration)
+				time.Sleep(delayDuration) // wait for 1 second before the next door call to avoid overloading the Hormann bisecur gateway
+			}
 		}
+		return nil
 	}
-	return nil
-}
-
+*/
 func (ha *HomeAssistanceMqttClient) openDoor() error {
 	direction := mockDoor.GetDirection()
 	lastDirection := mockDoor.GetLastDirection()

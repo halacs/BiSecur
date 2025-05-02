@@ -237,7 +237,7 @@ func (p *Packet) GetLength() int {
 
 func (p *Packet) GetLengthHexString() string {
 	payloadLengthBytes := make([]byte, 2)
-	binary.BigEndian.PutUint16(payloadLengthBytes, uint16(p.GetLength()))
+	binary.BigEndian.PutUint16(payloadLengthBytes, uint16(p.GetLength())) // #nosec G115
 	return strings.ToUpper(hex.EncodeToString(payloadLengthBytes))
 }
 

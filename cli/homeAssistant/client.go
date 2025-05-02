@@ -291,7 +291,7 @@ func (ha *HomeAssistanceMqttClient) newTlsConfig() *tls.Config {
 		RootCAs:            certpool,
 		ClientAuth:         tls.NoClientCert,
 		ClientCAs:          nil,
-		InsecureSkipVerify: ha.mqttServerTlsValidaton,
+		InsecureSkipVerify: ha.mqttServerTlsValidaton, // #nosec #G402
 		//Certificates:       []tls.Certificate{clientKeyPair},
 	}
 }

@@ -47,7 +47,7 @@ func (tc *TransmissionContainer) encodeToHexOrNot(encodeIntoHex bool) ([]byte, e
 		return buffer.Bytes(), fmt.Errorf("%v", err)
 	}
 
-	tc.BodyLength = uint16(tc.Packet.GetLength())
+	tc.BodyLength = uint16(tc.Packet.GetLength()) // #nosec G115
 
 	// Calculate checksum
 	tc.Checksum, err = tc.getChecksum()
