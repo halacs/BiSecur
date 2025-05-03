@@ -16,12 +16,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+        with:
+          # Optional: fetch all history for all tags and branches.
+          # fetch-depth: 0
+
+          # Optional: fetch submodules.
+          # submodules: true
+
+          # Optional: fetch all history for a single branch.
+          # fetch-depth: 1
+      - uses: actions/setup-go@v3
         with:
           go-version: '1.24.2'
           cache: false
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v7
         with:
           # Require: The version of golangci-lint to use.
           # When `install-mode` is `binary` (default) the value can be v1.2 or v1.2.3 or `latest` to use the latest version.
