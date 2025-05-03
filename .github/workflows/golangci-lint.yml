@@ -16,15 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          # Optional: fetch all history for all tags and branches.
-          # fetch-depth: 0
-
-          # Optional: fetch submodules.
-          # submodules: true
-
-          # Optional: fetch all history for a single branch.
-          # fetch-depth: 1
       - uses: actions/setup-go@v3
         with:
           go-version: '1.24.2'
