@@ -19,15 +19,14 @@ func StartTicker() {
 			case utils.OPENING:
 				openPercent = openPercent + 1
 				if openPercent == 100 {
-					SetPosition()
+					SetPosition() // make door state stopped
 				}
 			case utils.CLOSING:
 				openPercent = openPercent - 1
 				if openPercent == 0 {
-					SetPosition()
+					SetPosition() // make door state open
 				}
 			}
-			
 		}
 	}()
 
@@ -66,4 +65,12 @@ func SetPosition() {
 		lastDirection = direction
 		direction = utils.STOPPED
 	}
+}
+
+func SetStateMockMultiCall(count int) error {
+	for i := 0; i < count; i++ {
+		SetPosition()
+	}
+
+	return nil
 }

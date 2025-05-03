@@ -18,6 +18,7 @@ import (
 
 const (
 	qosAtLeastOnce = byte(1)
+	MinTelePeriod  = 3 * time.Second
 )
 
 type HomeAssistanceMqttClient struct {
@@ -181,10 +182,11 @@ func (ha *HomeAssistanceMqttClient) Start() error {
 
 	mockDoor.StartTicker()
 
-	if ha.mqttTelePeriod < 5*time.Second { // ensure minimum tele period to avoid flooding the Hormann gateway
-		ha.mqttTelePeriod = 10 * time.Second
+	if ha.mqttTelePeriod < MinTelePeriod { // ensure minimum tele period to avoid flooding the Hormann gateway
+		ha.mqttTelePeriod = MinTelePeriod
 		ha.log.Warnf("Tele period is too small. Set to %v", ha.mqttTelePeriod)
 	}
+
 	ticker := time.NewTicker(ha.mqttTelePeriod)
 	done, _ := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill, syscall.SIGTERM, syscall.SIGINT)
 
@@ -197,7 +199,11 @@ out:
 		case <-ticker.C:
 			ha.log.Tracef("Publish current door status")
 
+			startTs := time.Now()
 			direction, position, err := ha.getDoorStatus()
+			endTs := time.Now()
+			ha.log.Debugf("Get door status took %v", endTs.Sub(startTs))
+
 			if err != nil {
 				ha.log.Errorf("failed to get door status. %v", err)
 				continue
