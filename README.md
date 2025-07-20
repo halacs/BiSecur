@@ -32,13 +32,14 @@ Usage:
   halsecur [command]
 
 Available Commands:
+  Logout      
   completion  Generate the autocompletion script for the specified shell
   discover    Discover Hörmann BiSecur gateways on the local network
   get-name    Queries the name of the Hörmann BiSecur gateway
   groups      Manages doors defined in your Hörmann BiSecur gateway.
+  ha          Start MQTT client compatible with Home assistant auto discovery
   help        Help about any command
   login       
-  logout      
   ping        Check if your Hörmann BiSecur gateway is reachable or not.
   set-state   Open or close a door connected to your Hörmann BiSecur gateway.
   status      Queries the status (open/closed/etc) of your door.
@@ -47,7 +48,7 @@ Available Commands:
 
 Flags:
       --autologin         login automatically on demand (default true)
-      --debug             debug log level (default true)
+      --debug             debug Log level (default true)
   -h, --help              help for halsecur
       --host string       IP or host name or the Hörmann BiSecure gateway
       --json              use json logging format instead of human readable
@@ -72,16 +73,65 @@ As far as I know port if always 4000 so most probably it never need to be change
 ```bash
 autologin: true
 debug: false
-host: 192.168.3.232
+deviceport: 0
+host: 192.168.45.41
+ideviceport: 0
 json: false
-lastlogin: 1711743671911748
+lastlogin: 0
 mac: 54:10:EC:85:28:BB
+mqttbasetopic: ADD-YOUR-MQTT-BASE-TOPIC
+mqttdevicename: garage
+mqttpassword: ADD-YOUR-MQTT-PASSWORD
+mqttport: 8883
+mqttserver: ADD-YOUR-MQTT-SERVER
+mqttstricttlsvalidation: true
+mqttteleperiod: 5s
+mqtttls: true
+mqttusername: ADD-YOUR-MQTT-USERNAME
 password: ADD-YOUR-PASSWORD
 port: 4000
 token: 0
 username: app
 ```
 
+### Home Assistant MQTT auto discovery
+To operate your door from Home Assistant, start this application with `ha` command.
+
+It will connect to your BiSecur Gateway and will publish the door status and control commands to your MQTT server. Home Assistant will auto discover it.
+
+```bash
+$ ./dist/halsecur ha
+INFO[2025-07-20T21:28:10+02:00] Connected                                    
+INFO[2025-07-20T21:28:15+02:00] Token expired. Logging in...                 
+INFO[2025-07-20T21:28:18+02:00] Door position: 0, direction: closed          
+INFO[2025-07-20T21:28:21+02:00] Door position: 0, direction: closed          
+^CINFO[2025-07-20T21:28:22+02:00] Exiting                                      
+INFO[2025-07-20T21:28:22+02:00] Disconnected from MQTT server  
+```
+
+![gateway image](homeassistant1.png)
+
+This is how it looks like in my Home Assistant instance with my custom card.
+
+**NOTE1:** you need to change `entity` ID in the below example to match with your setup.
+
+**NOTE2:** if you want confirmation before door opening/closing via HA, you need to install the `restriction-card` in `HAACS`. If the confirmation is not needed you can just use auto discovered entity card. 
+
+```bash
+
+```yaml
+type: custom:hui-entities-card
+entities:
+  - card:
+      entity: cover.5410ec8528bb0_5410ec8528bb0
+    duration: 60
+    restrictions:
+      pin:
+        code: 1234
+        text: Garage Door
+    type: custom:restriction-card
+    row: true
+```
 
 ### Ping
 ```bash
