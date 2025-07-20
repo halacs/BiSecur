@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"bisecur/cli"
+	"bisecur/logger"
 	"fmt"
 	"github.com/spf13/viper"
 	"os"
@@ -11,7 +13,6 @@ import (
 
 var (
 	localMac = [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x09}
-	log      *logrus.Logger
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -32,7 +33,7 @@ func Execute() {
 }
 
 func init() {
-	log = newLogger()
+	cli.Log = logger.NewLogger()
 
 	var (
 		host      string
@@ -49,7 +50,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&host, ArgNameHost, "", "IP or host name or the Hörmann BiSecure gateway")
 	rootCmd.PersistentFlags().IntVar(&port, ArgNamePort, 4000, "")
 	rootCmd.PersistentFlags().StringVar(&deviceMac, ArgNameDeviceMac, "", "MAC address of the Hörmann BiSecur gateway")
-	rootCmd.PersistentFlags().Bool(ArgNameDebug, true, "debug log level")
+	rootCmd.PersistentFlags().Bool(ArgNameDebug, true, "debug Log level")
 	rootCmd.PersistentFlags().Bool(ArgNameJsonOutput, false, "use json logging format instead of human readable")
 	rootCmd.PersistentFlags().Bool(ArgNameAutoLogin, true, "login automatically on demand")
 
@@ -60,16 +61,16 @@ func init() {
 	viper.AddConfigPath(".") // optionally look for config in the working directory
 	err := viper.BindPFlags(rootCmd.PersistentFlags())
 	if err != nil {
-		log.Fatalf("failed to bind PFlags. %v", err)
+		cli.Log.Fatalf("failed to bind PFlags. %v", err)
 		os.Exit(1)
 	}
 	err = viper.ReadInConfig() // Find and read the config file
 	if err != nil {
 		_, ok := err.(viper.ConfigFileNotFoundError)
 		if ok {
-			log.Warning("Config file not found. Most probably you can ignore this message.")
+			cli.Log.Warning("Config file not found. Most probably you can ignore this message.")
 		} else {
-			log.Errorf("Failed to parse config file. %v", err)
+			cli.Log.Errorf("Failed to parse config file. %v", err)
 		}
 	}
 }
@@ -89,9 +90,9 @@ func preRunFuncs(cmd *cobra.Command, args []string) error {
 func toggleDebug(cmd *cobra.Command, args []string) {
 	debug := viper.GetBool(ArgNameDebug)
 	if debug {
-		log.SetLevel(logrus.DebugLevel)
+		cli.Log.SetLevel(logrus.DebugLevel)
 	} else {
-		log.SetLevel(logrus.InfoLevel)
+		cli.Log.SetLevel(logrus.InfoLevel)
 	}
 }
 
@@ -102,21 +103,6 @@ func jsonOutput(cmd *cobra.Command, args []string) {
 			PrettyPrint: true,
 		}
 
-		log.SetFormatter(jsonFormatter)
+		cli.Log.SetFormatter(jsonFormatter)
 	}
-}
-
-func newLogger() *logrus.Logger {
-	log := logrus.New()
-	log.SetFormatter(&logrus.TextFormatter{
-		//ForceColors:   true,
-		DisableColors: false,
-		FullTimestamp: true,
-	})
-	log.SetReportCaller(false)
-
-	// Output to stdout instead of the default stderr
-	// Can be any io.Writer, see below for File example
-	log.SetOutput(os.Stdout)
-	return log
 }

@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"bisecur/cli"
-	"bisecur/sdk"
+	"bisecur/cli/bisecur/users"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
@@ -27,17 +27,17 @@ func init() {
 
 			mac, err := cli.ParesMacString(deviceMac)
 			if err != nil {
-				log.Fatalf("%v", err)
+				cli.Log.Fatalf("%v", err)
 				os.Exit(1)
 			}
 
-			err = userRemove(localMac, mac, host, port, token, byte(userId))
+			err = users.UserRemove(localMac, mac, host, port, token, byte(userId))
 			if err != nil {
-				log.Fatalf("%v", err)
+				cli.Log.Fatalf("%v", err)
 				os.Exit(2)
 			}
 
-			log.Infof("Password has been removed")
+			cli.Log.Infof("Password has been removed")
 		},
 	}
 
@@ -45,30 +45,4 @@ func init() {
 
 	usersDeleteCmd.Flags().IntVar(&userId, ArgNameUserId, 0, "ID of the user to be deleted")
 	usersDeleteCmd.MarkFlagsOneRequired(ArgNameUserId)
-}
-
-func userRemove(localMac [6]byte, mac [6]byte, host string, port int, token uint32, userId byte) error {
-	client := sdk.NewClient(log, localMac, mac, host, port, token)
-	err := client.Open()
-	if err != nil {
-		return err
-	}
-
-	defer func() {
-		err2 := client.Close()
-		if err2 != nil {
-			log.Errorf("%v", err)
-		}
-	}()
-
-	err = retry(func() error {
-		err2 := client.RemoveUser(userId)
-		return err2
-	})
-
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

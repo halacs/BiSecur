@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"bisecur/cli"
-	"bisecur/sdk"
+	"bisecur/cli/bisecur"
 	"github.com/spf13/viper"
 	"os"
 
@@ -23,47 +23,19 @@ func init() {
 
 			mac, err := cli.ParesMacString(deviceMac)
 			if err != nil {
-				log.Fatalf("%v", err)
+				cli.Log.Fatalf("%v", err)
 				os.Exit(1)
 			}
 
-			err = GetName(localMac, mac, host, port, token)
+			name, err := bisecur.GetName(localMac, mac, host, port, token)
 			if err != nil {
-				log.Fatalf("%v", err)
+				cli.Log.Fatalf("%v", err)
 				os.Exit(4)
 			}
+
+			cli.Log.WithField("name", name).Infof("Success")
 		},
 	}
 
 	rootCmd.AddCommand(getNameCmd)
-}
-
-func GetName(localMac, mac [6]byte, host string, port int, token uint32) error {
-	client := sdk.NewClient(log, localMac, mac, host, port, token)
-	err := client.Open()
-	if err != nil {
-		return err
-	}
-
-	defer func() {
-		err2 := client.Close()
-		if err2 != nil {
-			log.Fatalf("%v", err2)
-		}
-	}()
-
-	var name string
-	err = retry(func() error {
-		var err2 error
-		name, err2 = client.GetName()
-		return err2
-	})
-
-	if err != nil {
-		return err
-	}
-
-	log.WithField("name", name).Infof("Success")
-
-	return nil
 }

@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"bisecur/cli"
-	"bisecur/sdk"
+	"bisecur/cli/bisecur"
 	"github.com/spf13/viper"
 	"os"
 
@@ -25,48 +25,22 @@ func init() {
 
 			mac, err := cli.ParesMacString(deviceMac)
 			if err != nil {
-				log.Fatalf("%v", err)
+				cli.Log.Fatalf("%v", err)
 				os.Exit(1)
 			}
 
-			err = setStatus(localMac, mac, host, port, byte(devicePort), token)
+			err = bisecur.SetState(localMac, mac, host, port, byte(devicePort), token)
 			if err != nil {
-				log.Fatalf("%v", err)
+				cli.Log.Fatalf("%v", err)
 				os.Exit(2)
 			}
 
-			log.Infof("Success")
+			cli.Log.Infof("Success")
 		},
 	}
 
 	rootCmd.AddCommand(setStateCmd)
 
-	setStateCmd.Flags().IntVar(&devicePort, devicePortName, 0, "Port number of the door")
-	setStateCmd.MarkFlagsOneRequired(devicePortName)
-}
-
-func setStatus(localMac [6]byte, mac [6]byte, host string, port int, devicePort byte, token uint32) error {
-	client := sdk.NewClient(log, localMac, mac, host, port, token)
-	err := client.Open()
-	if err != nil {
-		return err
-	}
-
-	defer func() {
-		err2 := client.Close()
-		if err2 != nil {
-			log.Errorf("%v", err2)
-		}
-	}()
-
-	err = retry(func() error {
-		err2 := client.SetState(devicePort)
-		return err2
-	})
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	setStateCmd.Flags().IntVar(&devicePort, ArgDevicePortName, 0, "Port number of the door")
+	setStateCmd.MarkFlagsOneRequired(ArgDevicePortName)
 }

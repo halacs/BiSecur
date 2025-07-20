@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"bisecur/cli"
+	"bisecur/cli/bisecur"
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -21,27 +23,27 @@ func loginRequired(name string) bool {
 
 func autoLogin(cmd *cobra.Command, args []string) error {
 	if !loginRequired(cmd.Use) {
-		log.Debugf("Login not required. Don't need to auto login.")
+		cli.Log.Debugf("Login not required. Don't need to auto login.")
 		return nil
 	}
 
 	autoLogin := viper.GetBool(ArgNameAutoLogin)
 	if !autoLogin {
-		log.Debugf("Auto login is disabled.")
+		cli.Log.Debugf("Auto login is disabled.")
 		return nil
 	}
 
 	lastLoginTimeStamp := viper.GetInt64(ArgNameLastLoginTimeStamp)
 	t := time.UnixMicro(lastLoginTimeStamp)
 
-	if t.Add(TokenExpirationTime).Before(time.Now()) {
-		log.Infof("Token expired. Logging in...")
+	if t.Add(bisecur.TokenExpirationTime).Before(time.Now()) {
+		cli.Log.Infof("Token expired. Logging in...")
 		err := loginCmdFunc()
 		if err != nil {
 			return fmt.Errorf("failed to auto login. %v", err)
 		}
 	}
 
-	log.Debugf("Token is still valid.")
+	cli.Log.Debugf("Token is still valid.")
 	return nil
 }

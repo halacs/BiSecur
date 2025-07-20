@@ -104,13 +104,13 @@ $ ./dist/halsecur login
 
 ### Get users
 ```bash
-$ ./dist/halsecur users list
+$ ./dist/halsecur users groups
 INFO[2024-03-29T21:20:36+01:00] Success                                       users="[{\"id\":0,\"name\":\"admin\",\"isAdmin\":true,\"Groups\":[]},{\"id\":1,\"name\":\"app\",\"isAdmin\":false,\"Groups\":[0]}]"
 ```
 
 ### Get groups
 ```bash
-$ ./dist/halsecur groups list
+$ ./dist/halsecur groups groups
 INFO[2024-03-29T21:20:55+01:00] [{"id":0,"name":"garazs","ports":[{"typeName":"IMPULS","id":0,"type":1}]}] 
 ```
 

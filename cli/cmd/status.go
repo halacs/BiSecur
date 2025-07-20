@@ -2,8 +2,7 @@ package cmd
 
 import (
 	"bisecur/cli"
-	"bisecur/sdk"
-	"bisecur/sdk/payload"
+	"bisecur/cli/bisecur"
 	"github.com/spf13/viper"
 	"os"
 
@@ -26,50 +25,22 @@ func init() {
 
 			mac, err := cli.ParesMacString(deviceMac)
 			if err != nil {
-				log.Fatalf("%v", err)
+				cli.Log.Fatalf("%v", err)
 				os.Exit(1)
 			}
 
-			err = getStatus(localMac, mac, host, port, byte(devicePort), token)
+			status, err := bisecur.GetStatus(localMac, mac, host, port, byte(devicePort), token)
 			if err != nil {
-				log.Fatalf("%v", err)
+				cli.Log.Fatalf("%v", err)
 				os.Exit(2)
 			}
+
+			cli.Log.WithField("status", status).Infof("Success")
 		},
 	}
 
 	rootCmd.AddCommand(statusCmd)
 
-	statusCmd.Flags().IntVar(&devicePort, devicePortName, 0, "Port number of the door")
-	statusCmd.MarkFlagsOneRequired(devicePortName)
-}
-
-func getStatus(localMac [6]byte, mac [6]byte, host string, port int, devicePort byte, token uint32) error {
-	client := sdk.NewClient(log, localMac, mac, host, port, token)
-	err := client.Open()
-	if err != nil {
-		return err
-	}
-
-	defer func() {
-		err2 := client.Close()
-		if err2 != nil {
-			log.Errorf("%v", err2)
-		}
-	}()
-
-	var status *payload.HmGetTransitionResponse
-	err = retry(func() error {
-		var err2 error
-		status, err2 = client.GetTransition(devicePort)
-		return err2
-	})
-
-	if err != nil {
-		return err
-	}
-
-	log.WithField("status", status).Infof("Success")
-
-	return nil
+	statusCmd.Flags().IntVar(&devicePort, ArgDevicePortName, 0, "Port number of the door")
+	statusCmd.MarkFlagsOneRequired(ArgDevicePortName)
 }

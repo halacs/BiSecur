@@ -47,7 +47,7 @@ func (tc *TransmissionContainer) encodeToHexOrNot(encodeIntoHex bool) ([]byte, e
 		return buffer.Bytes(), fmt.Errorf("%v", err)
 	}
 
-	tc.BodyLength = uint16(tc.Packet.GetLength())
+	tc.BodyLength = uint16(tc.Packet.GetLength()) // #nosec G115
 
 	// Calculate checksum
 	tc.Checksum, err = tc.getChecksum()
@@ -106,22 +106,22 @@ func DecodeTransmissionContainer(bufferHex *bytes.Buffer) (*TransmissionContaine
 
 	tc := TransmissionContainer{}
 
-	err = binary.Read(buffer, binary.BigEndian, &tc.TransmissionContainerPre.SrcMac)
+	err = binary.Read(buffer, binary.BigEndian, &tc.SrcMac)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode part of TransmissionContainerPre. %v", err)
 	}
 
-	err = binary.Read(buffer, binary.BigEndian, &tc.TransmissionContainerPre.DstMac)
+	err = binary.Read(buffer, binary.BigEndian, &tc.DstMac)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode part of TransmissionContainerPre. %v", err)
 	}
 
-	err = binary.Read(buffer, binary.BigEndian, &tc.TransmissionContainerPre.BodyLength)
+	err = binary.Read(buffer, binary.BigEndian, &tc.BodyLength)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode part of  TransmissionContainerPre. %v", err)
 	}
 
-	packetLength := tc.TransmissionContainerPre.BodyLength - 2 // ignore the last 2 checksum bytes; TODO This is really the reason to use -2 here???
+	packetLength := tc.BodyLength - 2 // ignore the last 2 checksum bytes; TODO This is really the reason to use -2 here???
 	packetBytes := make([]byte, packetLength)
 	_, err = buffer.Read(packetBytes)
 	if err != nil {
@@ -140,7 +140,7 @@ func DecodeTransmissionContainer(bufferHex *bytes.Buffer) (*TransmissionContaine
 	}
 	tc.Packet = *packet
 
-	err = binary.Read(buffer, binary.BigEndian, &tc.TransmissionContainerPost.Checksum)
+	err = binary.Read(buffer, binary.BigEndian, &tc.Checksum)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode part of TransmissionContainerPost. %v", err)
 	}
