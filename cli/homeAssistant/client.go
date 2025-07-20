@@ -242,6 +242,8 @@ func (ha *HomeAssistanceMqttClient) PublishCurrentDoorStatus(position int, direc
 		return fmt.Errorf("failed to publish discovery message. %v", mqttToken.Error())
 	}
 
+	ha.log.Debugf("Published current door status: position=%d, direction=%s, state=%s", position, direction, state)
+
 	return nil
 }
 
@@ -259,6 +261,8 @@ func (ha *HomeAssistanceMqttClient) PublishAvabilityMessage(online bool) error {
 		return fmt.Errorf("failed to publish avability message. %v", mqttToken.Error())
 	}
 
+	ha.log.Debugf("Published availability message: %s", message)
+
 	return nil
 }
 
@@ -272,6 +276,8 @@ func (ha *HomeAssistanceMqttClient) PublishDiscoveryMessage() error {
 	if mqttToken.Wait() && mqttToken.Error() != nil {
 		return fmt.Errorf("failed to publish discovery message. %v", mqttToken.Error())
 	}
+	
+	ha.log.Debugf("Published discovery message: %s", discoveryMsg)
 
 	return nil
 }

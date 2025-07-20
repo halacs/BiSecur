@@ -3,7 +3,6 @@ package homeAssistant
 import (
 	"bisecur/cli"
 	"bisecur/cli/bisecur"
-	"bisecur/cli/homeAssistant/mockDoor"
 	"bisecur/cli/utils"
 	"fmt"
 	"time"
@@ -32,8 +31,8 @@ func (ha *HomeAssistanceMqttClient) autoLoginBisecur() error {
 }
 
 func (ha *HomeAssistanceMqttClient) setStateMultiCall(count int) error {
-	//return ha.setStateBisecurMultiCall(count)
-	return mockDoor.SetStateMockMultiCall(count)
+	return ha.setStateBisecurMultiCall(count)
+	//return mockDoor.SetStateMockMultiCall(count)
 }
 
 func (ha *HomeAssistanceMqttClient) setStateBisecurMultiCall(count int) error {
@@ -61,6 +60,8 @@ func (ha *HomeAssistanceMqttClient) setStateBisecurMultiCall(count int) error {
 }
 
 func (ha *HomeAssistanceMqttClient) openDoor() error {
+	ha.log.Info("Opening door...")
+
 	direction, position, err := ha.getDoorStatus()
 	if err != nil {
 		return fmt.Errorf("failed to get door status. %v", err)
@@ -72,7 +73,7 @@ func (ha *HomeAssistanceMqttClient) openDoor() error {
 		if err != nil {
 			return fmt.Errorf("failed to set state. %v", err)
 		}
-	case utils.STOPPED:
+	case utils.STOPPED, utils.OPEN, utils.CLOSED:
 		if position < 100 { // check if door is not already fully open
 			err := ha.setStateMultiCall(1)
 			if err != nil {
@@ -90,7 +91,6 @@ func (ha *HomeAssistanceMqttClient) openDoor() error {
 					return fmt.Errorf("failed to reverse moving direction. %v", err)
 				}
 			}
-
 		}
 	case utils.OPENING:
 		ha.log.Infof("Door is already opening. Nothing to do.")
@@ -101,6 +101,8 @@ func (ha *HomeAssistanceMqttClient) openDoor() error {
 }
 
 func (ha *HomeAssistanceMqttClient) closeDoor() error {
+	ha.log.Info("Closing door...")
+
 	direction, position, err := ha.getDoorStatus()
 	if err != nil {
 		return fmt.Errorf("failed to get door status. %v", err)
@@ -112,7 +114,7 @@ func (ha *HomeAssistanceMqttClient) closeDoor() error {
 		if err != nil {
 			return fmt.Errorf("failed to set state. %v", err)
 		}
-	case utils.STOPPED:
+	case utils.STOPPED, utils.OPEN:
 		if position > 0 { // check if door is not already fully closed
 			err := ha.setStateMultiCall(1)
 			if err != nil {
@@ -141,6 +143,8 @@ func (ha *HomeAssistanceMqttClient) closeDoor() error {
 }
 
 func (ha *HomeAssistanceMqttClient) stopDoor() error {
+	ha.log.Infof("Stopping door...")
+
 	direction, _, err := ha.getDoorStatus()
 	if err != nil {
 		return fmt.Errorf("failed to get door status. %v", err)
