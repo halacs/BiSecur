@@ -15,6 +15,10 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date --rfc-email)"
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
@@ -45,5 +49,5 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            VERSION="fuck${{ github.ref_name }}"
-            BUILD_DATE="yeah${{ steps.meta.outputs.date }}"
+            VERSION="${{ github.ref_name }}"
+            BUILD_DATE="${{ steps.meta.outputs.date }}"
