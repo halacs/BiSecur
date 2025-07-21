@@ -8,6 +8,26 @@ on:
       - "v*.*.*"
 
 jobs:
+  releases-matrix:
+    name: Release Go Binary
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # build and publish in parallel: linux/386, linux/amd64, linux/arm64, windows/386, windows/amd64
+        goos: [ linux, windows ]
+        goarch: [ "386", amd64 ]
+    steps:
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date --rfc-email)"
+      - uses: actions/checkout@v3
+      - uses: wangyoucao577/go-release-action@v1
+        with:
+          binary_name: "halsecur"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          goos: ${{ matrix.goos }}
+          goarch: ${{ matrix.goarch }}
+          ldflags: "-X 'bisecur/version.Version=${{  github.ref_name }}' -X 'bisecur/version.BuildDate=${{ steps.date.outputs.date }}'"
   docker:
     runs-on: ubuntu-latest
     steps:
