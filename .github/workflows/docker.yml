@@ -2,6 +2,10 @@ name: docker
 
 on:
   push:
+    branches:
+      - "**"
+    tags:
+      - "v*.*.*"
 
 jobs:
   docker:
