@@ -15,10 +15,6 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
-      - name: Get current date
-        id: date
-        run: echo "::set-output name=date::$(date -u)"
-
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
