@@ -17,7 +17,7 @@ jobs:
     steps:
       - name: Get current date
         id: date
-        run: echo "::set-output name=date::$(date --rfc-email)"
+        run: echo "::set-output name=date::$(date -u)"
 
       - name: Docker meta
         id: meta
