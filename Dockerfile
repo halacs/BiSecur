@@ -8,7 +8,8 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN go build -ldflags "-X 'bisecur/version.Version=$VERSION' -X 'bisecur/version.BuildDate=$BUILD_DATE'" -o /halsecur
+RUN env
+RUN go build -ldflags "-X 'bisecur/version.Version=${VERSION}' -X 'bisecur/version.BuildDate=${BUILD_DATE}'" -o /halsecur
 
 FROM ubuntu:24.04
 
