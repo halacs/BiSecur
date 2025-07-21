@@ -1,5 +1,6 @@
 # ---- Build stage ---
-ARG github_ref_name
+ARG VERSION
+ARG BUILD_DATE
 FROM golang:alpine AS builder
 
 WORKDIR /app
@@ -7,7 +8,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN go build -ldflags "-X 'bisecur/version.Version=${github.ref_name}' -X 'bisecur/version.BuildDate=$(date)'" -o /halsecur
+RUN go build -ldflags "-X 'bisecur/version.Version=${VERSION}' -X 'bisecur/version.BuildDate=${BUILD_DATE}'" -o /halsecur
 
 FROM ubuntu:24.04
 
