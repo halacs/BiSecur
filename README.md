@@ -75,7 +75,7 @@ autologin: true
 debug: false
 deviceport: 0
 host: 192.168.45.41
-ideviceport: 0
+deviceport: 0
 json: false
 lastlogin: 0
 mac: 54:10:EC:85:28:BB
@@ -117,8 +117,6 @@ This is how it looks like in my Home Assistant instance with my custom card.
 
 **NOTE2:** if you want confirmation before door opening/closing via HA, you need to install the `restriction-card` in `HAACS`. If the confirmation is not needed you can just use auto discovered entity card. 
 
-```bash
-
 ```yaml
 type: custom:hui-entities-card
 entities:
@@ -131,6 +129,21 @@ entities:
         text: Garage Door
     type: custom:restriction-card
     row: true
+```
+
+### Run in Docker with Docker Compose
+If you want to run this application in Docker, you can use the following `docker-compose.yaml` file.
+
+```yaml
+services:
+  halsecure:
+    container_name: halsecure
+    image: "ghcr.io/halacs/halsecur:v2"
+    command: [ "ha" ]
+    volumes:
+      - ./config.yaml:/config.yaml
+    restart: unless-stopped
+    #network_mode: host # needed only for BiSecure gateway discovery
 ```
 
 ### Ping

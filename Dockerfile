@@ -3,8 +3,6 @@ FROM golang:alpine AS builder
 ARG VERSION
 
 WORKDIR /app
-COPY go.mod go.sum ./
-RUN go mod download
 
 COPY . .
 RUN go build -ldflags "-X 'bisecur/version.Version=${VERSION}' -X 'bisecur/version.BuildDate=$(date +%Y-%m-%dT%H:%M:%SZ)'" -o /halsecur

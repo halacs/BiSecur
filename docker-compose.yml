@@ -1,0 +1,9 @@
+services:
+  halsecure:
+    container_name: halsecure
+    image: "ghcr.io/halacs/halsecur:v2"
+    command: [ "ha" ]
+    volumes:
+      - ./config.yaml:/config.yaml
+    restart: unless-stopped
+    #network_mode: host # needed only for BiSecure gateway discovery

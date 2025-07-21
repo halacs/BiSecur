@@ -1,11 +1,8 @@
 name: docker
 
 on:
-  push:
-    branches:
-      - "**"
-    tags:
-      - "v*.*.*"
+  release:
+    types: [created]
 
 permissions:
   contents: read
@@ -22,7 +19,10 @@ jobs:
           images: |
             ghcr.io/halacs/halsecur
           tags: |
-            type=ref,event=branch
+            type=semver,pattern=v{{version}}
+            type=semver,pattern=v{{major}}.{{minor}}
+            type=semver,pattern=v{{major}}
+          flavor: latest=true  # Explicitly enable latest tag if needed
 
       - name: Login to GHCR
         if: github.event_name != 'pull_request'
