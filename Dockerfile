@@ -1,4 +1,5 @@
 # ---- Build stage ---
+ARG github_ref_name
 FROM golang:alpine AS builder
 
 WORKDIR /app
