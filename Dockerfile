@@ -6,7 +6,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "-X 'bisecur/version.Version=${{  github.ref_name }}' -X 'bisecur/version.BuildDate=$(date)'" -o /halsecur
+RUN go build -ldflags "-X 'bisecur/version.Version=${github.ref_name}' -X 'bisecur/version.BuildDate=$(date)'" -o /halsecur
 
 FROM ubuntu:24.04
 
