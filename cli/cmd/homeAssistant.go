@@ -5,10 +5,11 @@ import (
 	"bisecur/cli/homeAssistant"
 	"flag"
 	"fmt"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"os"
 	"time"
+
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func init() {
@@ -24,6 +25,7 @@ func init() {
 		mqttTelePeriod         time.Duration
 		mqttTelePeriodFast     time.Duration
 		devicePort             int
+		doPeriodicRequests     bool
 	)
 
 	haCmd := &cobra.Command{
@@ -50,6 +52,7 @@ func init() {
 			mqttTelePeriod = viper.GetDuration(ArgMqttTelePeriodName)
 			mqttTelePeriodFast = viper.GetDuration(ArgMqttTelePeriodFastName)
 			devicePort = viper.GetInt(ArgDevicePortName)
+			doPeriodicRequests = viper.GetBool(ArgDoPeriodicRequests)
 
 			mqttClientId := fmt.Sprintf("clientId_%s", deviceMac)
 
@@ -63,7 +66,7 @@ func init() {
 				cli.Log, localMac, mac, username, password, host, port, token,
 				mqttServerName, mqttClientId, mqttServerPort, mqttServerTls, mqttServerTlsValidaton,
 				mqttBaseTopic, mqttDeviceName, mqttUserName, mqttPassword, mqttTelePeriod, mqttTelePeriodFast,
-				byte(devicePort),
+				byte(devicePort), doPeriodicRequests,
 			)
 			if err != nil {
 				cli.Log.Fatalf("%v", err)
@@ -90,6 +93,7 @@ func init() {
 	haCmd.Flags().DurationVarP(&mqttTelePeriod, ArgMqttTelePeriodName, "e", 15*time.Second, "Frequency of device state publish")
 	haCmd.Flags().DurationVarP(&mqttTelePeriodFast, ArgMqttTelePeriodFastName, "f", 5*time.Second, "Frequency of device state publish when door might be moving")
 	haCmd.Flags().IntVar(&devicePort, ArgDevicePortName, 0, "Port number of the door")
+	haCmd.Flags().BoolVar(&doPeriodicRequests, ArgDoPeriodicRequests, true, "Whether periodic status requests should be sent or not")
 	flag.Parse()
 	err := viper.BindPFlags(haCmd.Flags())
 	if err != nil {

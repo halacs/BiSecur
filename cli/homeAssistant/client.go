@@ -1,6 +1,7 @@
 package homeAssistant
 
 import (
+	"bisecur/cli/bisecur"
 	"bisecur/cli/homeAssistant/mockDoor"
 	"bisecur/cli/utils"
 	"context"
@@ -46,11 +47,12 @@ type HomeAssistanceMqttClient struct {
 	log                    *logrus.Logger
 	mqttClient             mqtt.Client
 	requestFastUpdate      time.Time
+	doPeriodicRequests     bool
 }
 
 func NewHomeAssistanceMqttClient(log *logrus.Logger, localMac [6]byte, deviceMac [6]byte, deviceUsername string, devicePassword string, host string, port int, token uint32, mqttServerName string, mqttClientId string,
 	mqttServerPort int, mqttServerTls bool, mqttServerTlsValidaton bool, mqttBaseTopic string,
-	mqttDeviceName string, mqttUserName string, mqttPassword string, mqttTelePeriod time.Duration, mqttTelePeriodFast time.Duration, devicePort byte) (*HomeAssistanceMqttClient, error) {
+	mqttDeviceName string, mqttUserName string, mqttPassword string, mqttTelePeriod time.Duration, mqttTelePeriodFast time.Duration, devicePort byte, doPeriodicRequests bool) (*HomeAssistanceMqttClient, error) {
 
 	ha := &HomeAssistanceMqttClient{
 		localMac:               localMac,
@@ -74,6 +76,7 @@ func NewHomeAssistanceMqttClient(log *logrus.Logger, localMac [6]byte, deviceMac
 		devicePort:             devicePort,
 		log:                    log,
 		requestFastUpdate:      time.UnixMicro(0), // initial value must be in the past
+		doPeriodicRequests:     doPeriodicRequests,
 	}
 
 	return ha, nil
@@ -163,6 +166,13 @@ func (ha *HomeAssistanceMqttClient) Start() error {
 		ha.mqttClient.Disconnect(250)
 
 		ha.log.Infof("Disconnected from MQTT server")
+
+		err = bisecur.Logout(ha.localMac, ha.deviceMac, ha.host, ha.port, ha.token)
+		if err != nil {
+			ha.log.Errorf("Error logging out of bisecur")
+		} else {
+			ha.log.Infof("Logged out of bisecur")
+		}
 	}()
 
 	// Subscribe to home assistant's status topic (get notification when HA restarts)
@@ -208,20 +218,28 @@ out:
 			ha.log.Infof("Exiting")
 			break out
 		case <-ticker.C:
-			err := ha.doorStatus()
-			if err != nil {
-				ha.log.Errorf("failed to publish current door status. %v", err)
-				continue
+			if ha.doPeriodicRequests {
+				err := ha.doorStatus()
+				if err != nil {
+					ha.log.Errorf("failed to publish current door status. %v", err)
+					continue
+				}
+			} else {
+				log.Printf("Status request skipped due to disable periodic requests.")
 			}
 		case <-tickerFast.C:
 			if !ha.requestFastDootStatus() {
 				continue
 			}
 
-			err := ha.doorStatus()
-			if err != nil {
-				ha.log.Errorf("failed to publish current door status (fast). %v", err)
-				continue
+			if ha.doPeriodicRequests {
+				err := ha.doorStatus()
+				if err != nil {
+					ha.log.Errorf("failed to publish current door status. %v", err)
+					continue
+				}
+			} else {
+				log.Printf("Status request skipped due to disable periodic requests.")
 			}
 		}
 	}

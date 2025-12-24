@@ -32,4 +32,5 @@ const (
 	LogoutCmdName                  = "Logout"
 	PingCmdName                    = "ping"
 	HomeAssistantCmdName           = "ha"
+	ArgDoPeriodicRequests          = "doPeriodicRequests"
 )
