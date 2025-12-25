@@ -225,7 +225,7 @@ out:
 					continue
 				}
 			} else {
-				log.Printf("Status request skipped due to disable periodic requests.")
+				ha.log.Debug("Status request skipped due to disable periodic requests.")
 			}
 		case <-tickerFast.C:
 			if !ha.requestFastDootStatus() {
@@ -239,7 +239,7 @@ out:
 					continue
 				}
 			} else {
-				log.Printf("Status request skipped due to disable periodic requests.")
+				ha.log.Debug("Status request skipped due to disable periodic requests.")
 			}
 		}
 	}
