@@ -46,12 +46,12 @@ type HomeAssistanceMqttClient struct {
 	log                    *logrus.Logger
 	mqttClient             mqtt.Client
 	requestFastUpdate      time.Time
-	doPeriodicRequests     bool
+	doorStatusSupported    bool
 }
 
 func NewHomeAssistanceMqttClient(log *logrus.Logger, localMac [6]byte, deviceMac [6]byte, deviceUsername string, devicePassword string, host string, port int, token uint32, mqttServerName string, mqttClientId string,
 	mqttServerPort int, mqttServerTls bool, mqttServerTlsValidaton bool, mqttBaseTopic string,
-	mqttDeviceName string, mqttUserName string, mqttPassword string, mqttTelePeriod time.Duration, mqttTelePeriodFast time.Duration, devicePort byte, doPeriodicRequests bool) (*HomeAssistanceMqttClient, error) {
+	mqttDeviceName string, mqttUserName string, mqttPassword string, mqttTelePeriod time.Duration, mqttTelePeriodFast time.Duration, devicePort byte, doorStatusSupported bool) (*HomeAssistanceMqttClient, error) {
 
 	ha := &HomeAssistanceMqttClient{
 		localMac:               localMac,
@@ -75,7 +75,7 @@ func NewHomeAssistanceMqttClient(log *logrus.Logger, localMac [6]byte, deviceMac
 		devicePort:             devicePort,
 		log:                    log,
 		requestFastUpdate:      time.UnixMicro(0), // initial value must be in the past
-		doPeriodicRequests:     doPeriodicRequests,
+		doorStatusSupported:    doorStatusSupported,
 	}
 
 	return ha, nil
@@ -121,6 +121,11 @@ func (ha *HomeAssistanceMqttClient) Start() error {
 				if err != nil {
 					ha.log.Errorf("failed to stop door. %v", err)
 				}
+			case "PRESS":
+				err := ha.impuls()
+				if err != nil {
+					ha.log.Errorf("failed to do impuls. %v", err)
+				}
 			}
 
 		}
@@ -133,7 +138,7 @@ func (ha *HomeAssistanceMqttClient) Start() error {
 		protocol = "tls"
 	}
 	brokerUrl := fmt.Sprintf("%s://%s:%d", protocol, ha.mqttServerName, ha.mqttServerPort)
-	ha.log.Debugf("MQTT Broken url: %s", brokerUrl)
+	ha.log.Debugf("MQTT Broker url: %s", brokerUrl)
 	opts.AddBroker(brokerUrl)
 
 	opts.SetClientID(ha.mqttClientId)
@@ -217,7 +222,7 @@ out:
 			ha.log.Infof("Exiting")
 			break out
 		case <-ticker.C:
-			if ha.doPeriodicRequests {
+			if ha.doorStatusSupported {
 				err := ha.doorStatus()
 				if err != nil {
 					ha.log.Errorf("failed to publish current door status. %v", err)
@@ -231,7 +236,7 @@ out:
 				continue
 			}
 
-			if ha.doPeriodicRequests {
+			if ha.doorStatusSupported {
 				err := ha.doorStatus()
 				if err != nil {
 					ha.log.Errorf("failed to publish current door status. %v", err)
@@ -332,7 +337,7 @@ func (ha *HomeAssistanceMqttClient) PublishDiscoveryMessage() error {
 		return fmt.Errorf("failed to generate discovery message. %v", err)
 	}
 
-	mqttToken := ha.mqttClient.Publish(ha.getDiscoveryTopic(), qosAtLeastOnce, true, discoveryMsg)
+	mqttToken := ha.mqttClient.Publish(ha.getDiscoveryTopic(!ha.doorStatusSupported), qosAtLeastOnce, true, discoveryMsg)
 	if mqttToken.Wait() && mqttToken.Error() != nil {
 		return fmt.Errorf("failed to publish discovery message. %v", mqttToken.Error())
 	}

@@ -88,6 +88,17 @@ func (ha *HomeAssistanceMqttClient) setStateBisecurMultiCall(count int) error {
 	return nil
 }
 
+func (ha *HomeAssistanceMqttClient) impuls() any {
+	ha.log.Info("Sending impuls...")
+
+	err := ha.setStateMultiCall(1)
+	if err != nil {
+		return fmt.Errorf("failed to send impuls. %v", err)
+	}
+
+	return nil
+}
+
 func (ha *HomeAssistanceMqttClient) openDoor() error {
 	ha.log.Info("Opening door...")
 

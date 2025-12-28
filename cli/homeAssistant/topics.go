@@ -21,10 +21,13 @@ func (ha *HomeAssistanceMqttClient) getGetStateTopicName() string {
 	return fmt.Sprintf("%s/%s/state", ha.mqttBaseTopic, ha.mqttDeviceName)
 }
 
-func (ha *HomeAssistanceMqttClient) getDiscoveryTopic() string {
+func (ha *HomeAssistanceMqttClient) getDiscoveryTopic(impulsCommandOnly bool) string {
 	//<discovery_prefix>/<component>/[<node_id>/]<object_id>/config
-
-	return fmt.Sprintf("homeassistant/cover/halsecur/%s/config", ha.getUniqueObjectId())
+	entity_type := "cover"
+	if impulsCommandOnly {
+		entity_type = "button"
+	}
+	return fmt.Sprintf("homeassistant/%s/halsecur/%s/config", entity_type, ha.getUniqueObjectId())
 }
 
 func (ha *HomeAssistanceMqttClient) getUniqueObjectId() string {
