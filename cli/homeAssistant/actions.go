@@ -59,12 +59,12 @@ func (ha *HomeAssistanceMqttClient) forceReLogin() error {
 	return nil
 }
 
-func (ha *HomeAssistanceMqttClient) setStateMultiCall(count int) error {
-	return ha.setStateBisecurMultiCall(count)
+func (ha *HomeAssistanceMqttClient) setStateMultiCall(count int, devicePort byte) error {
+	return ha.setStateBisecurMultiCall(count, devicePort)
 	//return mockDoor.SetStateMockMultiCall(count)
 }
 
-func (ha *HomeAssistanceMqttClient) setStateBisecurMultiCall(count int) error {
+func (ha *HomeAssistanceMqttClient) setStateBisecurMultiCall(count int, devicePort byte) error {
 	const delayDuration = 1500 * time.Millisecond
 
 	for i := 0; i < count; i++ {
@@ -75,7 +75,7 @@ func (ha *HomeAssistanceMqttClient) setStateBisecurMultiCall(count int) error {
 			return fmt.Errorf("auto login failed. %v", err)
 		}
 
-		err = bisecur.SetState(ha.localMac, ha.deviceMac, ha.host, ha.port, ha.devicePort, ha.token)
+		err = bisecur.SetState(ha.localMac, ha.deviceMac, ha.host, ha.port, devicePort, ha.token)
 		if err != nil {
 			return fmt.Errorf("failed to get door status. %v", err)
 		}
@@ -88,10 +88,10 @@ func (ha *HomeAssistanceMqttClient) setStateBisecurMultiCall(count int) error {
 	return nil
 }
 
-func (ha *HomeAssistanceMqttClient) impuls() any {
+func (ha *HomeAssistanceMqttClient) impuls(devicePort byte) any {
 	ha.log.Info("Sending impuls...")
 
-	err := ha.setStateMultiCall(1)
+	err := ha.setStateMultiCall(1, devicePort)
 	if err != nil {
 		return fmt.Errorf("failed to send impuls. %v", err)
 	}
@@ -99,34 +99,34 @@ func (ha *HomeAssistanceMqttClient) impuls() any {
 	return nil
 }
 
-func (ha *HomeAssistanceMqttClient) openDoor() error {
+func (ha *HomeAssistanceMqttClient) openDoor(devicePort byte) error {
 	ha.log.Info("Opening door...")
 
-	direction, position, err := ha.getDoorStatus()
+	direction, position, err := ha.getDoorStatus(devicePort)
 	if err != nil {
 		return fmt.Errorf("failed to get door status. %v", err)
 	}
 
 	switch direction {
 	case utils.CLOSING:
-		err := ha.setStateMultiCall(2)
+		err := ha.setStateMultiCall(2, devicePort)
 		if err != nil {
 			return fmt.Errorf("failed to set state. %v", err)
 		}
 	case utils.STOPPED, utils.OPEN, utils.CLOSED:
 		if position < 100 { // check if door is not already fully open
-			err := ha.setStateMultiCall(1)
+			err := ha.setStateMultiCall(1, devicePort)
 			if err != nil {
 				return fmt.Errorf("failed to set state. %v", err)
 			}
 
-			newDirection, _, err := ha.getDoorStatus()
+			newDirection, _, err := ha.getDoorStatus(devicePort)
 			if err != nil {
 				return fmt.Errorf("failed to get door status to confirm it is moving into the right direction. %v", err)
 			}
 
 			if newDirection != utils.OPENING && newDirection != utils.OPEN { // check if door needs to be reversed
-				err := ha.setStateMultiCall(2)
+				err := ha.setStateMultiCall(2, devicePort)
 				if err != nil {
 					return fmt.Errorf("failed to reverse moving direction. %v", err)
 				}
@@ -143,34 +143,34 @@ func (ha *HomeAssistanceMqttClient) openDoor() error {
 	return nil
 }
 
-func (ha *HomeAssistanceMqttClient) closeDoor() error {
+func (ha *HomeAssistanceMqttClient) closeDoor(devicePort byte) error {
 	ha.log.Info("Closing door...")
 
-	direction, position, err := ha.getDoorStatus()
+	direction, position, err := ha.getDoorStatus(devicePort)
 	if err != nil {
 		return fmt.Errorf("failed to get door status. %v", err)
 	}
 
 	switch direction {
 	case utils.OPENING:
-		err := ha.setStateMultiCall(2) // stop then reverse
+		err := ha.setStateMultiCall(2, devicePort) // stop then reverse
 		if err != nil {
 			return fmt.Errorf("failed to set state. %v", err)
 		}
 	case utils.STOPPED, utils.OPEN:
 		if position > 0 { // check if door is not already fully closed
-			err := ha.setStateMultiCall(1)
+			err := ha.setStateMultiCall(1, devicePort)
 			if err != nil {
 				return fmt.Errorf("failed to set state. %v", err)
 			}
 
-			newDirection, _, err := ha.getDoorStatus()
+			newDirection, _, err := ha.getDoorStatus(devicePort)
 			if err != nil {
 				return fmt.Errorf("failed to get door status to confirm it is moving into the right direction. %v", err)
 			}
 
 			if newDirection != utils.CLOSING && newDirection != utils.CLOSED { // check if door needs to be reversed
-				err := ha.setStateMultiCall(2)
+				err := ha.setStateMultiCall(2, devicePort)
 				if err != nil {
 					return fmt.Errorf("failed to reverse moving direction. %v", err)
 				}
@@ -187,16 +187,16 @@ func (ha *HomeAssistanceMqttClient) closeDoor() error {
 	return nil
 }
 
-func (ha *HomeAssistanceMqttClient) stopDoor() error {
+func (ha *HomeAssistanceMqttClient) stopDoor(devicePort byte) error {
 	ha.log.Infof("Stopping door...")
 
-	direction, _, err := ha.getDoorStatus()
+	direction, _, err := ha.getDoorStatus(devicePort)
 	if err != nil {
 		return fmt.Errorf("failed to get door status. %v", err)
 	}
 
 	if direction == utils.OPENING || direction == utils.CLOSING { // anything which means moving door
-		err := ha.setStateMultiCall(1)
+		err := ha.setStateMultiCall(1, devicePort)
 		if err != nil {
 			return fmt.Errorf("failed to stop the door. %v", err)
 		}
@@ -209,7 +209,7 @@ func (ha *HomeAssistanceMqttClient) stopDoor() error {
 	return nil
 }
 
-func (ha *HomeAssistanceMqttClient) getDoorStatus() (direction string, position int, err error) {
+func (ha *HomeAssistanceMqttClient) getDoorStatus(devicePort byte) (direction string, position int, err error) {
 	/*
 		status="{\"StateInPercent\":0,\"DesiredStateInPercent\":0,\"ErrorResponse\":false,\"AutoClose\":false,\"DriveTime\":0,
 		\"Gk\":257,\"Hcp\":{\"PositionOpen\":false,\"PositionClose\":true,\"OptionRelais\":false,\"LightBarrier\":false,
@@ -229,7 +229,7 @@ func (ha *HomeAssistanceMqttClient) getDoorStatus() (direction string, position 
 	var status *payload.HmGetTransitionResponse
 	err = utils.RetryAlways(utils.RetryCount, func() error {
 		var err2 error
-		status, err2 = bisecur.GetStatus(ha.localMac, ha.deviceMac, ha.host, ha.port, ha.devicePort, ha.token)
+		status, err2 = bisecur.GetStatus(ha.localMac, ha.deviceMac, ha.host, ha.port, devicePort, ha.token)
 
 		if err2.Error() == "PERMISSION_DENIED" { // TODO don't like string comparisons so should be refactored somehow while relogin also should be make more generic (think of other commands)
 			// Does it make sense to force relogin after a PERMISSION_DENIED error?

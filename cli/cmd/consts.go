@@ -33,4 +33,5 @@ const (
 	PingCmdName                    = "ping"
 	HomeAssistantCmdName           = "ha"
 	ArgDoorStatusSupported         = "doorStatusSupported"
+	ArgDevicePortsName             = "devicePorts"
 )

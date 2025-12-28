@@ -25,7 +25,7 @@ func init() {
 		mqttPassword           string
 		mqttTelePeriod         time.Duration
 		mqttTelePeriodFast     time.Duration
-		devicePort             int
+		devicePorts            []int
 		doorStatusSupported    bool
 	)
 
@@ -52,7 +52,7 @@ func init() {
 			mqttPassword = viper.GetString(ArgMqttPasswordName)
 			mqttTelePeriod = viper.GetDuration(ArgMqttTelePeriodName)
 			mqttTelePeriodFast = viper.GetDuration(ArgMqttTelePeriodFastName)
-			devicePort = viper.GetInt(ArgDevicePortName)
+			devicePorts = viper.GetIntSlice(ArgDevicePortsName)
 			doorStatusSupported = viper.GetBool(ArgDoorStatusSupported)
 
 			mqttClientId := fmt.Sprintf("clientId_%s", deviceMac)
@@ -67,7 +67,7 @@ func init() {
 				cli.Log, localMac, mac, username, password, host, port, token,
 				mqttServerName, mqttClientId, mqttServerPort, mqttServerTls, mqttServerTlsValidaton,
 				mqttBaseTopic, mqttDeviceName, mqttUserName, mqttPassword, mqttTelePeriod, mqttTelePeriodFast,
-				byte(devicePort), doorStatusSupported,
+				devicePorts, doorStatusSupported,
 			)
 			if err != nil {
 				cli.Log.Fatalf("%v", err)
@@ -93,7 +93,7 @@ func init() {
 	haCmd.Flags().StringVarP(&mqttDeviceName, ArgMqttDeviceNameName, "n", "garage", "Name of the local device in MQTT messages")
 	haCmd.Flags().DurationVarP(&mqttTelePeriod, ArgMqttTelePeriodName, "e", 15*time.Second, "Frequency of device state publish")
 	haCmd.Flags().DurationVarP(&mqttTelePeriodFast, ArgMqttTelePeriodFastName, "f", 5*time.Second, "Frequency of device state publish when door might be moving")
-	haCmd.Flags().IntVar(&devicePort, ArgDevicePortName, 0, "Port number of the door")
+	haCmd.Flags().IntSliceVar(&devicePorts, ArgDevicePortsName, []int{}, "Port numbers of the doors")
 	haCmd.Flags().BoolVar(&doorStatusSupported, ArgDoorStatusSupported, true, "Whether the controlled door supports door status (opening state) or not")
 	flag.Parse()
 	err := viper.BindPFlags(haCmd.Flags())

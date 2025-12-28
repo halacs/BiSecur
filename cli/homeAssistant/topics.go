@@ -5,36 +5,36 @@ import (
 	"fmt"
 )
 
-func (ha *HomeAssistanceMqttClient) getPositionTopicName() string {
-	return fmt.Sprintf("%s/%s/position", ha.mqttBaseTopic, ha.mqttDeviceName)
+func (ha *HomeAssistanceMqttClient) getPositionTopicName(devicePort int) string {
+	return fmt.Sprintf("%s/%d/position", ha.mqttBaseTopic, devicePort)
 }
 
-func (ha *HomeAssistanceMqttClient) getSetPositionTopic() string {
-	return fmt.Sprintf("%s/cmnd/%s/position", ha.mqttBaseTopic, ha.mqttDeviceName)
+func (ha *HomeAssistanceMqttClient) getSetPositionTopic(devicePort int) string {
+	return fmt.Sprintf("%s/cmnd/%d/position", ha.mqttBaseTopic, devicePort)
 }
 
-func (ha *HomeAssistanceMqttClient) getDirectionTopicName() string {
-	return fmt.Sprintf("%s/%s/direction", ha.mqttBaseTopic, ha.mqttDeviceName)
+func (ha *HomeAssistanceMqttClient) getDirectionTopicName(devicePort int) string {
+	return fmt.Sprintf("%s/%d/direction", ha.mqttBaseTopic, devicePort)
 }
 
-func (ha *HomeAssistanceMqttClient) getGetStateTopicName() string {
-	return fmt.Sprintf("%s/%s/state", ha.mqttBaseTopic, ha.mqttDeviceName)
+func (ha *HomeAssistanceMqttClient) getGetStateTopicName(devicePort int) string {
+	return fmt.Sprintf("%s/%d/state", ha.mqttBaseTopic, devicePort)
 }
 
-func (ha *HomeAssistanceMqttClient) getDiscoveryTopic(impulsCommandOnly bool) string {
+func (ha *HomeAssistanceMqttClient) getDiscoveryTopic(impulsCommandOnly bool, devicePort int) string {
 	//<discovery_prefix>/<component>/[<node_id>/]<object_id>/config
 	entity_type := "cover"
 	if impulsCommandOnly {
 		entity_type = "button"
 	}
-	return fmt.Sprintf("homeassistant/%s/halsecur/%s/config", entity_type, ha.getUniqueObjectId())
+	return fmt.Sprintf("homeassistant/%s/halsecur/%s/config", entity_type, ha.getUniqueObjectId(devicePort))
 }
 
-func (ha *HomeAssistanceMqttClient) getUniqueObjectId() string {
+func (ha *HomeAssistanceMqttClient) getUniqueObjectId(devicePort int) string {
 	deviceMacStr := hex.EncodeToString(ha.deviceMac[:])
-	return fmt.Sprintf("%s%d", deviceMacStr, ha.devicePort)
+	return fmt.Sprintf("%s%d", deviceMacStr, devicePort)
 }
 
-func (ha *HomeAssistanceMqttClient) getAvailabilityTopic() string {
-	return fmt.Sprintf("%s/%s/availability", ha.mqttBaseTopic, ha.mqttDeviceName)
+func (ha *HomeAssistanceMqttClient) getAvailabilityTopic(devicePort int) string {
+	return fmt.Sprintf("%s/%d/availability", ha.mqttBaseTopic, devicePort)
 }
