@@ -354,7 +354,7 @@ func (ha *HomeAssistanceMqttClient) PublishDiscoveryMessage(devicePort int) erro
 		return fmt.Errorf("failed to generate discovery message. %v", err)
 	}
 
-	mqttToken := ha.mqttClient.Publish(ha.getDiscoveryTopic(!ha.doorStatusSupported, devicePort), qosAtLeastOnce, true, discoveryMsg)
+	mqttToken := ha.mqttClient.Publish(ha.getDiscoveryTopic(devicePort), qosAtLeastOnce, true, discoveryMsg)
 	if mqttToken.Wait() && mqttToken.Error() != nil {
 		return fmt.Errorf("failed to publish discovery message. %v", mqttToken.Error())
 	}

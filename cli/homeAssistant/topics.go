@@ -21,10 +21,10 @@ func (ha *HomeAssistanceMqttClient) getGetStateTopicName(devicePort int) string 
 	return fmt.Sprintf("%s/%d/state", ha.mqttBaseTopic, devicePort)
 }
 
-func (ha *HomeAssistanceMqttClient) getDiscoveryTopic(impulsCommandOnly bool, devicePort int) string {
+func (ha *HomeAssistanceMqttClient) getDiscoveryTopic(devicePort int) string {
 	//<discovery_prefix>/<component>/[<node_id>/]<object_id>/config
 	entity_type := "cover"
-	if impulsCommandOnly {
+	if !ha.doorStatusSupported {
 		entity_type = "button"
 	}
 	return fmt.Sprintf("homeassistant/%s/halsecur/%s/config", entity_type, ha.getUniqueObjectId(devicePort))
