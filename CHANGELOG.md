@@ -6,6 +6,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [v2.2.2]
+
 ### Added
 - Maintain an increased status report frequency while the door is in motion, regardless of the trigger source.
 - Add `doPeriodicRequests` option to Home Assistant integration
