@@ -1,7 +1,7 @@
 package bisecur
 
 import (
-	"bisecur/sdk"
+	"halsecur/sdk"
 )
 
 func UserPasswordChange(localMac [6]byte, mac [6]byte, host string, port int, token uint32, userId byte, newPassword string) error {

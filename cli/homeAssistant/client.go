@@ -1,7 +1,7 @@
 package homeAssistant
 
 import (
-	"bisecur/cli/utils"
+	"halsecur/cli/utils"
 	"context"
 	"crypto/tls"
 	"crypto/x509"

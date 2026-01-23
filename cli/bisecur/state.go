@@ -1,8 +1,8 @@
 package bisecur
 
 import (
-	"bisecur/sdk"
-	"bisecur/sdk/payload"
+	"halsecur/sdk"
+	"halsecur/sdk/payload"
 )
 
 func GetStatus(localMac [6]byte, mac [6]byte, host string, port int, devicePort byte, token uint32) (*payload.HmGetTransitionResponse, error) {

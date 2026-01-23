@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"bisecur/cli"
+	"halsecur/cli"
 	"github.com/spf13/cobra"
 )
 

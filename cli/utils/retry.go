@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"bisecur/cli"
+	"halsecur/cli"
 	"time"
 )
 

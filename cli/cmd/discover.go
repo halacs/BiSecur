@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"bisecur/cli"
-	"bisecur/sdk"
+	"halsecur/cli"
+	"halsecur/sdk"
 	"context"
 	"os"
 	"time"

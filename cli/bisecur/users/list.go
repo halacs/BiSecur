@@ -1,9 +1,9 @@
 package users
 
 import (
-	"bisecur/cli"
-	"bisecur/cli/bisecur"
-	"bisecur/sdk"
+	"halsecur/cli"
+	"halsecur/cli/bisecur"
+	"halsecur/sdk"
 )
 
 func ListUsers(localMac [6]byte, mac [6]byte, host string, port int, token uint32) error {

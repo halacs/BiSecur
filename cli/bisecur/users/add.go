@@ -1,8 +1,8 @@
 package users
 
 import (
-	"bisecur/cli/bisecur"
-	"bisecur/sdk"
+	"halsecur/cli/bisecur"
+	"halsecur/sdk"
 )
 
 func UserAdd(localMac [6]byte, mac [6]byte, host string, port int, token uint32, userName string, password string) (byte, error) {

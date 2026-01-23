@@ -1,7 +1,7 @@
 package bisecur
 
 import (
-	"bisecur/sdk"
+	"halsecur/sdk"
 )
 
 func Login(localMac [6]byte, mac [6]byte, host string, port int, username string, password string) (uint32, error) {

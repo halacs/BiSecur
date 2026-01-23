@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"bisecur/cli"
-	"bisecur/cli/homeAssistant"
-	"bisecur/cli/utils"
+	"halsecur/cli"
+	"halsecur/cli/homeAssistant"
+	"halsecur/cli/utils"
 	"flag"
 	"fmt"
 	"os"

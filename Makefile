@@ -5,7 +5,7 @@ GOLANGCILINT_VERSION := v2.7.2
 GOSEC_VERSION := v2.22.11
 VULNCHECK_VERSION := latest
 
-LDFLAGS := -X bisecur/version.Version=?version? -X bisecur/version.BuildDate=?date?
+LDFLAGS := -X halsecur/version.Version=?version? -X halsecur/version.BuildDate=?date?
 
 ifeq ($(OS),Windows_NT)
 	SHELL := cmd.exe
@@ -71,4 +71,4 @@ else
 endif
 
 build-docker: env build
-	docker build --build-arg TARGETPLATFORM='./' --build-arg VERSION=$(shell git describe --tags --always) -t bisecur/halsecur:latest -f Dockerfile "$(DIST)"
+	docker build --build-arg TARGETPLATFORM='./' --build-arg VERSION=$(shell git describe --tags --always) -t halsecur/halsecur:latest -f Dockerfile "$(DIST)"

@@ -1,9 +1,9 @@
 package groups
 
 import (
-	"bisecur/cli"
-	"bisecur/cli/utils"
-	"bisecur/sdk"
+	"halsecur/cli"
+	"halsecur/cli/utils"
+	"halsecur/sdk"
 )
 
 func ListGroups(localMac [6]byte, mac [6]byte, host string, port int, token uint32) (*sdk.Groups, error) {

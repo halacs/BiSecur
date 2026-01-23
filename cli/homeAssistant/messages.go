@@ -1,7 +1,7 @@
 package homeAssistant
 
 import (
-	"bisecur/cli/utils"
+	"halsecur/cli/utils"
 	"fmt"
 )
 

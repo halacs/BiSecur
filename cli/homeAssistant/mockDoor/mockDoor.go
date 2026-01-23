@@ -1,7 +1,7 @@
 package mockDoor
 
 import (
-	"bisecur/cli/utils"
+	"halsecur/cli/utils"
 	"time"
 )
 

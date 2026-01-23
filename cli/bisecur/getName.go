@@ -1,7 +1,7 @@
 package bisecur
 
 import (
-	"bisecur/sdk"
+	"halsecur/sdk"
 )
 
 func GetName(localMac, mac [6]byte, host string, port int, token uint32) (string, error) {

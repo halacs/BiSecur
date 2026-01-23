@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"bisecur/cli"
-	"bisecur/cli/bisecur"
+	"halsecur/cli"
+	"halsecur/cli/bisecur"
 	"fmt"
 	"time"
 

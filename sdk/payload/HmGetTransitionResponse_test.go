@@ -1,7 +1,7 @@
 package payload
 
 import (
-	"bisecur/sdk/payload/hcp"
+	"halsecur/sdk/payload/hcp"
 	"encoding/hex"
 	"testing"
 	"time"

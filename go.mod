@@ -1,4 +1,4 @@
-module bisecur
+module halsecur
 
 go 1.25
 

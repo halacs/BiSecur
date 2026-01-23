@@ -1,10 +1,10 @@
 package homeAssistant
 
 import (
-	"bisecur/cli"
-	"bisecur/cli/bisecur"
-	"bisecur/cli/utils"
-	"bisecur/sdk/payload"
+	"halsecur/cli"
+	"halsecur/cli/bisecur"
+	"halsecur/cli/utils"
+	"halsecur/sdk/payload"
 	"fmt"
 	"time"
 )

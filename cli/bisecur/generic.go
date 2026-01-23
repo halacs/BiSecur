@@ -1,9 +1,9 @@
 package bisecur
 
 import (
-	"bisecur/cli"
-	"bisecur/cli/utils"
-	"bisecur/sdk"
+	"halsecur/cli"
+	"halsecur/cli/utils"
+	"halsecur/sdk"
 	"time"
 )
 

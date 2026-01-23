@@ -1,8 +1,8 @@
 package sdk
 
 import (
-	"bisecur/sdk/payload"
-	"bisecur/sdk/payload/hcp"
+	"halsecur/sdk/payload"
+	"halsecur/sdk/payload/hcp"
 	"bytes"
 	"testing"
 )

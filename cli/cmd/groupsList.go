@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"bisecur/cli"
-	"bisecur/cli/bisecur/groups"
-	"bisecur/cli/utils"
+	"halsecur/cli"
+	"halsecur/cli/bisecur/groups"
+	"halsecur/cli/utils"
 	"os"
 
 	"github.com/spf13/viper"
