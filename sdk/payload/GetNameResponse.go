@@ -3,6 +3,7 @@ package payload
 import (
 	"encoding/hex"
 	"fmt"
+	"halsecur/cli/utils"
 )
 
 type GetNameResponse struct {
@@ -14,10 +15,14 @@ func (gnr *GetNameResponse) Encode() []byte {
 }
 
 func GetNameResponsePayload(name string) PayloadInterface {
+	dataLength, err := utils.SafeLen(len(name))
+	if err != nil {
+		return nil
+	}
 	return &GetNameResponse{
 		Payload{
 			data:       []byte(name),
-			dataLength: byte(len(name)),
+			dataLength: dataLength,
 		},
 	}
 }

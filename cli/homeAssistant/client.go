@@ -1,11 +1,12 @@
 package homeAssistant
 
 import (
-	"halsecur/cli/utils"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"halsecur/cli"
+	"halsecur/cli/utils"
 	"log"
 	"os"
 	"os/signal"
@@ -95,7 +96,11 @@ func (ha *HomeAssistanceMqttClient) homeAssistantSetPossitionMessagePubHandler(c
 		ha.log.Errorf("failed to parse device port. %v", err)
 		return
 	}
-	devicePort := byte(devicePortInt)
+	devicePort, err := utils.SafeLen(devicePortInt)
+	if err != nil {
+		cli.Log.Fatalf("too big devicePort value. %v", err)
+		os.Exit(2)
+	}
 	command := string(msg.Payload())
 
 	switch command {

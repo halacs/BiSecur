@@ -1,11 +1,11 @@
 package sdk
 
 import (
-	"halsecur/sdk/payload"
 	"bytes"
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"halsecur/sdk/payload"
 	"strings"
 )
 
@@ -242,7 +242,7 @@ func (p *Packet) GetLengthHexString() string {
 }
 
 func (p *Packet) getChecksum() (byte, error) {
-	value := byte(p.GetLength())
+	value := byte(p.GetLength()) // #nosec G115 intentionally truncate data instead of safe cast
 
 	// Summarize the head bytes
 	headBuffer := new(bytes.Buffer)

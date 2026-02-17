@@ -23,10 +23,12 @@ func (j *Jcmp) Encode() []byte {
 }
 
 func DecodeJcmpPayload(payloadBytes []byte) (PayloadInterface, error) {
+	dataLength := byte(len(payloadBytes)) // #nosec G115 intentionally truncate data instead of safe cast
+
 	return &Jcmp{
 		Payload{
 			data:       payloadBytes, // json request/response
-			dataLength: byte(len(payloadBytes)),
+			dataLength: dataLength,
 		},
 	}, nil
 }

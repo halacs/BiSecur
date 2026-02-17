@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
+	"halsecur/cli/utils"
 )
 
 type ChangeUserPassword struct {
@@ -20,10 +21,14 @@ func ChangeUserPasswordPayload(userId byte, password string) PayloadInterface {
 	var buff bytes.Buffer
 	buff.Write([]byte{userId})
 	buff.Write([]byte(password))
-
+	
+	dataLength, err := utils.SafeLen(len(buff.Bytes()))
+	if err != nil {
+		return nil
+	}
 	pl := Payload{
 		data:       buff.Bytes(),
-		dataLength: byte(len(buff.Bytes())),
+		dataLength: dataLength,
 	}
 
 	return &ChangeUserPassword{

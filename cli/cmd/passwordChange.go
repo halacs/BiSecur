@@ -32,7 +32,13 @@ func init() {
 				os.Exit(1)
 			}
 
-			err = bisecur.UserPasswordChange(localMac, mac, host, port, token, byte(userId), newPassword)
+			userIdByte, err := utils.SafeLen(userId)
+			if err != nil {
+				cli.Log.Fatalf("too big userId value. %v", err)
+				os.Exit(2)
+			}
+
+			err = bisecur.UserPasswordChange(localMac, mac, host, port, token, userIdByte, newPassword)
 			if err != nil {
 				cli.Log.Fatalf("%v", err)
 				os.Exit(2)

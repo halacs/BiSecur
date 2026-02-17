@@ -31,7 +31,12 @@ func init() {
 				os.Exit(1)
 			}
 
-			status, err := bisecur.GetStatus(localMac, mac, host, port, byte(devicePort), token)
+			devicePortByte, err := utils.SafeLen(devicePort)
+			if err != nil {
+				cli.Log.Fatalf("too big devicePort value. %v", err)
+				os.Exit(2)
+			}
+			status, err := bisecur.GetStatus(localMac, mac, host, port, devicePortByte, token)
 			if err != nil {
 				cli.Log.Fatalf("%v", err)
 				os.Exit(2)

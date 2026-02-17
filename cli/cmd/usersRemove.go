@@ -33,7 +33,12 @@ func init() {
 				os.Exit(1)
 			}
 
-			err = users.UserRemove(localMac, mac, host, port, token, byte(userId))
+			userIdByte, err := utils.SafeLen(userId)
+			if err != nil {
+				cli.Log.Fatalf("too big userId value. %v", err)
+				os.Exit(2)
+			}
+			err = users.UserRemove(localMac, mac, host, port, token, userIdByte)
 			if err != nil {
 				cli.Log.Fatalf("%v", err)
 				os.Exit(2)

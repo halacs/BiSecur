@@ -2,6 +2,7 @@ package payload
 
 import (
 	"bytes"
+	"halsecur/cli/utils"
 )
 
 type Login struct {
@@ -28,8 +29,13 @@ func (l *Login) Encode() []byte {
 func LoginPayload(username, password string) PayloadInterface {
 	b := new(bytes.Buffer)
 
-	usernameLength := byte(len(username))
-	_, err := b.WriteString(string(usernameLength))
+	userNameLength, err := utils.SafeLen(len(username))
+	if err != nil {
+		return nil
+	}
+
+	usernameLength := userNameLength
+	_, err = b.WriteString(string(usernameLength))
 	if err != nil {
 		panic("???")
 	}
@@ -46,9 +52,14 @@ func LoginPayload(username, password string) PayloadInterface {
 
 	buffBytes := b.Bytes()
 
+	dataLength, err := utils.SafeLen(len(buffBytes))
+	if err != nil {
+		return nil
+	}
+
 	payload := Payload{
 		data:       buffBytes,
-		dataLength: byte(len(buffBytes)),
+		dataLength: dataLength,
 	}
 
 	login := &Login{

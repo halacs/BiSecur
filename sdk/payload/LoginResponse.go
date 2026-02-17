@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"halsecur/cli/utils"
 )
 
 type LoginResponse struct {
@@ -48,10 +49,15 @@ func toByteArray(senderID byte, token uint32) []byte {
 }
 
 func LoginResponsePayload(senderID byte, token uint32) PayloadInterface {
+	dataLength, err := utils.SafeLen(len(toByteArray(senderID, token)))
+	if err != nil {
+		return nil
+	}
+
 	lrp := &LoginResponse{
 		Payload: Payload{
 			data:       toByteArray(senderID, token),
-			dataLength: byte(len(toByteArray(senderID, token))),
+			dataLength: dataLength,
 		},
 		senderID: senderID,
 		token:    token,

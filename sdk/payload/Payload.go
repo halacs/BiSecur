@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"halsecur/cli/utils"
 )
 
 type Payload struct {
@@ -26,7 +27,11 @@ func (p *Payload) Encode() []byte {
 
 	p.dataLength = 0
 	if p.ToByteArray() != nil && len(p.ToByteArray()) > 0 {
-		p.dataLength = byte(len(p.ToByteArray()))
+		b, err := utils.SafeLen(len(p.ToByteArray()))
+		if err != nil {
+			return nil
+		}
+		p.dataLength = b
 	}
 
 	if p.ToByteArray() != nil && len(p.ToByteArray()) > 0 {

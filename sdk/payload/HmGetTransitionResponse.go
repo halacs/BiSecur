@@ -1,11 +1,12 @@
 package payload
 
 import (
-	"halsecur/sdk/payload/hcp"
 	"bytes"
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
+	"halsecur/cli/utils"
+	"halsecur/sdk/payload/hcp"
 	"time"
 )
 
@@ -27,10 +28,14 @@ func DecodeHmGetTransitionResponsePayload(payloadBytes []byte) (PayloadInterface
 	hcpPayloadBytes := payloadBytes[6:8]
 	h := hcp.DecodeHcp(hcpPayloadBytes)
 
+	dataLength, err := utils.SafeLen(len(payloadBytes))
+	if err != nil {
+		return nil, err
+	}
 	hmgtr := &HmGetTransitionResponse{
 		Payload: Payload{
 			data:       payloadBytes,
-			dataLength: byte(len(payloadBytes)),
+			dataLength: dataLength,
 		},
 		StateInPercent:        int(payloadBytes[0]) / 2,
 		DesiredStateInPercent: int(payloadBytes[1]) / 2,
