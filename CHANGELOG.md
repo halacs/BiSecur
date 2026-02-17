@@ -6,13 +6,19 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
-## [v2.2.2]
-
 ### Added
 
 ### Changed
 
 ### Fixed
+
+## [v2.2.3]
+
+### Added
+- Warning message when no device port specified 
+
+### Fixed
+- Addressed gosec linter warnings related to unsafe integer-to-byte conversions.
 
 ## [v2.2.2]
 
