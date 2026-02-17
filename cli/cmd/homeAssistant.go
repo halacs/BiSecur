@@ -1,11 +1,11 @@
 package cmd
 
 import (
+	"flag"
+	"fmt"
 	"halsecur/cli"
 	"halsecur/cli/homeAssistant"
 	"halsecur/cli/utils"
-	"flag"
-	"fmt"
 	"os"
 	"time"
 
@@ -54,6 +54,10 @@ func init() {
 			mqttTelePeriodFast = viper.GetDuration(ArgMqttTelePeriodFastName)
 			devicePorts = viper.GetIntSlice(ArgDevicePortsName)
 			doorStatusSupported = viper.GetBool(ArgDoorStatusSupported)
+
+			if len(devicePorts) == 0 {
+				cli.Log.Warnf("%s parameter empty. This might be wrong.", ArgDevicePortsName)
+			}
 
 			mqttClientId := fmt.Sprintf("clientId_%s", deviceMac)
 
