@@ -72,6 +72,7 @@ debug: false
 deviceport: 0
 host: 192.168.45.41
 deviceport: 0
+deviceports: [0]
 json: false
 lastlogin: 0
 mac: 54:10:EC:85:28:BB
