@@ -60,15 +60,19 @@ func (c *Client) getTransmissionContainer(commandID byte, payload payload.Payloa
 }
 
 func (c *Client) transmitCommandWithResponse(requestTc *TransmissionContainer) (*TransmissionContainer, error) {
-	return c.transmitCommand(requestTc, true)
+	return c.transmitCommand(requestTc, true, 5*time.Second)
+}
+
+func (c *Client) transmitCommandWithResponseTimeout(requestTc *TransmissionContainer, timeout time.Duration) (*TransmissionContainer, error) {
+	return c.transmitCommand(requestTc, true, timeout)
 }
 
 func (c *Client) transmitCommandWithNoResponse(requestTc *TransmissionContainer) error {
-	_, err := c.transmitCommand(requestTc, false)
+	_, err := c.transmitCommand(requestTc, false, 0)
 	return err
 }
 
-func (c *Client) transmitCommand(requestTc *TransmissionContainer, expectResponse bool) (*TransmissionContainer, error) {
+func (c *Client) transmitCommand(requestTc *TransmissionContainer, expectResponse bool, readTimeout time.Duration) (*TransmissionContainer, error) {
 	c.log.Debugf("Request: %s", requestTc.String())
 	requestBytes, err := requestTc.Encode()
 	if err != nil {
@@ -84,7 +88,7 @@ func (c *Client) transmitCommand(requestTc *TransmissionContainer, expectRespons
 
 	if expectResponse {
 		receivedBytesTmp := make([]byte, 10240)
-		err := c.connection.SetReadDeadline(time.Now().Add(time.Second * 5))
+		err := c.connection.SetReadDeadline(time.Now().Add(readTimeout))
 		if err != nil {
 			return nil, fmt.Errorf("failed to set read deadline. %v", err)
 		}
@@ -483,6 +487,77 @@ func (c *Client) PasswordChange(userId byte, newPassword string) error {
 
 	if response.isResponseFor(tc) != nil {
 		return fmt.Errorf("received unexpected packet: %s", response)
+	}
+
+	return nil
+}
+
+// AddPort enters receive mode and listens for a hand remote's radio signal (ADD_PORT 0x29).
+// The hand remote must be pressed within ~10cm of the gateway. Timeout: ~40 seconds.
+// In testing, the cloned port did not support position feedback via HM_GET_TRANSITION.
+func (c *Client) AddPort() (portId byte, err error) {
+	tc := c.getTransmissionContainer(COMMANDID_ADD_PORT, payload.EmptyPayload())
+	response, err := c.transmitCommandWithResponseTimeout(tc, 45*time.Second)
+	if err != nil {
+		return 0, fmt.Errorf("failed to encode packet. %v", err)
+	}
+
+	if response == nil {
+		return 0, fmt.Errorf("unexpected nil response value")
+	}
+
+	err = response.isResponseFor(tc)
+	if err != nil {
+		return 0, fmt.Errorf("received unexpected packet: %s. %v", response, err)
+	}
+
+	portIdResponse := response.Packet.payload.(*payload.PortIdResponse)
+	return portIdResponse.GetPortId(), nil
+}
+
+// InheritPort transmits the gateway's own radio code for the motor to learn (INHERIT_PORT 0x41).
+// The motor must be in learn mode (press P button). The gateway should be within
+// ~20-30cm of the motor for pairing. Timeout: ~40 seconds.
+// In testing, the inherited port supported position feedback via HM_GET_TRANSITION.
+func (c *Client) InheritPort() (portId byte, err error) {
+	tc := c.getTransmissionContainer(COMMANDID_INHERIT_PORT, payload.EmptyPayload())
+	response, err := c.transmitCommandWithResponseTimeout(tc, 45*time.Second)
+	if err != nil {
+		return 0, fmt.Errorf("failed to encode packet. %v", err)
+	}
+
+	if response == nil {
+		return 0, fmt.Errorf("unexpected nil response value")
+	}
+
+	err = response.isResponseFor(tc)
+	if err != nil {
+		return 0, fmt.Errorf("received unexpected packet: %s. %v", response, err)
+	}
+
+	portIdResponse := response.Packet.payload.(*payload.PortIdResponse)
+	return portIdResponse.GetPortId(), nil
+}
+
+// RemovePort deletes a paired port from the gateway (REMOVE_PORT 0x42).
+func (c *Client) RemovePort(portId byte) error {
+	tc := c.getTransmissionContainer(COMMANDID_REMOVE_PORT, payload.RemovePortPayload(portId))
+	response, err := c.transmitCommandWithResponse(tc)
+	if err != nil {
+		return fmt.Errorf("failed to encode packet. %v", err)
+	}
+
+	if response == nil {
+		return fmt.Errorf("unexpected nil response value")
+	}
+
+	if response.isResponseFor(tc) != nil {
+		return fmt.Errorf("received unexpected packet: %s", response)
+	}
+
+	portIdResponse := response.Packet.payload.(*payload.PortIdResponse)
+	if portIdResponse.GetPortId() != portId {
+		return fmt.Errorf("failed to remove port. %v", portIdResponse)
 	}
 
 	return nil

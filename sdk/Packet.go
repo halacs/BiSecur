@@ -159,6 +159,30 @@ func DecodePacket(packetLength uint16, buffer *bytes.Buffer) (*Packet, error) {
 			return nil, err2
 		}
 		p.payload = pl
+	case COMMANDID_ADD_PORT_RESPONSE:
+		pl, err2 := payload.DecodePortIdResponsePayload(payloadBytes)
+		if err2 != nil {
+			return nil, err2
+		}
+		p.payload = pl
+	case COMMANDID_INHERIT_PORT_RESPONSE:
+		pl, err2 := payload.DecodePortIdResponsePayload(payloadBytes)
+		if err2 != nil {
+			return nil, err2
+		}
+		p.payload = pl
+	case COMMANDID_REMOVE_PORT:
+		pl, err2 := payload.DecodeRemovePortPayload(payloadBytes)
+		if err2 != nil {
+			return nil, err2
+		}
+		p.payload = pl
+	case COMMANDID_REMOVE_PORT_RESPONSE:
+		pl, err2 := payload.DecodePortIdResponsePayload(payloadBytes)
+		if err2 != nil {
+			return nil, err2
+		}
+		p.payload = pl
 	default:
 		p.payload = payload.EmptyPayload()
 	}
