@@ -16,7 +16,8 @@ func (gp *GetPortsResponse) Encode() []byte {
 
 func GetPortsResponsePayload(portIds []byte) PayloadInterface {
 	pl := Payload{
-		data: portIds,
+		data:       portIds,
+		dataLength: byte(len(portIds)), // #nosec G115 intentionally truncate data instead of safe cast
 	}
 
 	return &GetPortsResponse{
@@ -26,7 +27,7 @@ func GetPortsResponsePayload(portIds []byte) PayloadInterface {
 }
 
 func (gp *GetPortsResponse) String() string {
-	return fmt.Sprintf("GetPortsResponse: %s", gp.data)
+	return fmt.Sprintf("GetPortsResponse: %X", gp.data)
 }
 
 func (gp *GetPortsResponse) GetPortIds() []byte {
