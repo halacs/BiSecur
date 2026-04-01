@@ -27,7 +27,7 @@ func GetTypePayload(portId byte) PayloadInterface {
 }
 
 func (gt *GetType) String() string {
-	return fmt.Sprintf("GetType: %s", gt.data)
+	return fmt.Sprintf("GetType: %X", gt.data)
 }
 
 func DecodeGetTypePayload(payloadBytes []byte) (PayloadInterface, error) {

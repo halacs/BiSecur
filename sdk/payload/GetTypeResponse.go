@@ -29,7 +29,7 @@ func GetTypeResponsePayload(portId byte, portType byte) PayloadInterface {
 }
 
 func (gt *GetTypeResponse) String() string {
-	return fmt.Sprintf("GetTypeResponse: %s", gt.data)
+	return fmt.Sprintf("GetTypeResponse: %X", gt.data)
 }
 
 func (gt *GetTypeResponse) GetPortId() byte {
