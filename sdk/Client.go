@@ -488,6 +488,46 @@ func (c *Client) PasswordChange(userId byte, newPassword string) error {
 	return nil
 }
 
+// GetPorts returns the list of port IDs configured on the gateway (GET_PORTS 0x30).
+func (c *Client) GetPorts() ([]byte, error) {
+	tc := c.getTransmissionContainer(COMMANDID_GET_PORTS, payload.EmptyPayload())
+	response, err := c.transmitCommandWithResponse(tc)
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode packet. %v", err)
+	}
+
+	if response == nil {
+		return nil, fmt.Errorf("unexpected nil response value")
+	}
+
+	if response.isResponseFor(tc) != nil {
+		return nil, fmt.Errorf("received unexpected packet: %s", response)
+	}
+
+	portsResponse := response.Packet.payload.(*payload.GetPortsResponse)
+	return portsResponse.GetPortIds(), nil
+}
+
+// GetType returns the type of a port (GET_TYPE 0x31). See PORT_TYPE_* constants.
+func (c *Client) GetType(portId byte) (byte, error) {
+	tc := c.getTransmissionContainer(COMMANDID_GET_TYPE, payload.GetTypePayload(portId))
+	response, err := c.transmitCommandWithResponse(tc)
+	if err != nil {
+		return 0, fmt.Errorf("failed to encode packet. %v", err)
+	}
+
+	if response == nil {
+		return 0, fmt.Errorf("unexpected nil response value")
+	}
+
+	if response.isResponseFor(tc) != nil {
+		return 0, fmt.Errorf("received unexpected packet: %s", response)
+	}
+
+	typeResponse := response.Packet.payload.(*payload.GetTypeResponse)
+	return typeResponse.GetPortType(), nil
+}
+
 /*
 func (c *Client) SetUserRights(userId byte, ???) error {
 	return nil
