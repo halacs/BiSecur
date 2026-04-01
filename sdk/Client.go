@@ -2,11 +2,9 @@ package sdk
 
 import (
 	"bytes"
-	"encoding/hex"
 	"fmt"
 	"halsecur/sdk/payload"
 	"net"
-	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -83,7 +81,7 @@ func (c *Client) receiveResponse(timeout time.Duration) (*TransmissionContainer,
 	}
 
 	c.log.Debugf("Length of received bytes: %d", size)
-	c.log.Debugf("Response bytes: %s", strings.ToUpper(hex.EncodeToString(receivedBytesTmp[0:size])))
+	c.log.Debugf("Response bytes: %X", receivedBytesTmp[0:size])
 
 	buffer := new(bytes.Buffer)
 	_, err = buffer.Write(receivedBytesTmp[0:size])
