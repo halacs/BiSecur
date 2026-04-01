@@ -1,8 +1,8 @@
 DIST := dist
 APPNAME := halsecur
 
-GOLANGCILINT_VERSION := v2.7.2
-GOSEC_VERSION := v2.23.0
+GOLANGCILINT_VERSION := v2.11.4
+GOSEC_VERSION := v2.25.0
 VULNCHECK_VERSION := latest
 
 LDFLAGS := -X halsecur/version.Version=?version? -X halsecur/version.BuildDate=?date?
