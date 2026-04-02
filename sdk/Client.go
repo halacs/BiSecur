@@ -1,9 +1,9 @@
 package sdk
 
 import (
-	"halsecur/sdk/payload"
 	"bytes"
 	"fmt"
+	"halsecur/sdk/payload"
 	"net"
 	"time"
 
@@ -72,6 +72,36 @@ func (c *Client) transmitCommandWithNoResponse(requestTc *TransmissionContainer)
 	return err
 }
 
+// receiveResponse reads and decodes a single response from the connection.
+func (c *Client) receiveResponse(timeout time.Duration) (*TransmissionContainer, error) {
+	receivedBytesTmp := make([]byte, 10240)
+	err := c.connection.SetReadDeadline(time.Now().Add(timeout))
+	if err != nil {
+		return nil, fmt.Errorf("failed to set read deadline. %v", err)
+	}
+	size, err := c.connection.Read(receivedBytesTmp)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read network stream. %v", err)
+	}
+
+	c.log.Debugf("Length of received bytes: %d", size)
+	c.log.Debugf("Response bytes: %X", receivedBytesTmp[0:size])
+
+	buffer := new(bytes.Buffer)
+	_, err = buffer.Write(receivedBytesTmp[0:size])
+	if err != nil {
+		return nil, fmt.Errorf("failed to write into buffer. %v", err)
+	}
+
+	receivedTc, err := DecodeTransmissionContainer(buffer)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode transmission container. %v", err)
+	}
+
+	c.log.Debugf("Received TC: %v", receivedTc)
+	return receivedTc, nil
+}
+
 func (c *Client) transmitCommand(requestTc *TransmissionContainer, expectResponse bool, readTimeout time.Duration) (*TransmissionContainer, error) {
 	c.log.Debugf("Request: %s", requestTc.String())
 	requestBytes, err := requestTc.Encode()
@@ -84,36 +114,11 @@ func (c *Client) transmitCommand(requestTc *TransmissionContainer, expectRespons
 		return nil, fmt.Errorf("failed to write into network stream. %v", err)
 	}
 
-	var receivedTc *TransmissionContainer
-
-	if expectResponse {
-		receivedBytesTmp := make([]byte, 10240)
-		err := c.connection.SetReadDeadline(time.Now().Add(readTimeout))
-		if err != nil {
-			return nil, fmt.Errorf("failed to set read deadline. %v", err)
-		}
-		size, err := c.connection.Read(receivedBytesTmp)
-		receivedHexString := string(receivedBytesTmp[0:size])
-		c.log.Debugf("Length of received bytes: %d", size)
-		c.log.Debugf("Response bytes: %s", receivedHexString)
-		if err != nil {
-			return nil, fmt.Errorf("failed to read network stream. %v", err)
-		}
-
-		buffer := new(bytes.Buffer)
-		_, err = buffer.Write(receivedBytesTmp[0:size])
-		if err != nil {
-			return nil, fmt.Errorf("failed to write into buffer. %v", err)
-		}
-
-		receivedTc, err = DecodeTransmissionContainer(buffer)
-		if err != nil {
-			return nil, fmt.Errorf("failed to decode transmission container. %v", err)
-		}
-
-		c.log.Debugf("Received TC: %v", receivedTc)
+	if !expectResponse {
+		return nil, nil
 	}
-	return receivedTc, err
+
+	return c.receiveResponse(readTimeout)
 }
 
 func (c *Client) Open() error {
@@ -337,16 +342,29 @@ func (c *Client) Login(username string, password string) error {
 	tc := c.getTransmissionContainer(COMMANDID_LOGIN, payload.LoginPayload(username, password))
 	response, err := c.transmitCommandWithResponse(tc)
 	if err != nil {
-		return fmt.Errorf("failed to encode packet. %v", err)
+		return fmt.Errorf("failed to send login request. %v", err)
 	}
 
 	if response == nil {
 		return fmt.Errorf("unexpected nil response value")
 	}
 
+	// The gateway sends a LOGOUT frame for each stale session before the
+	// actual LOGIN response. Drain these before processing the login.
+	const maxDrain = 20
+	for i := 0; i < maxDrain; i++ {
+		if response.Packet.getCommandID() != COMMANDID_LOGOUT {
+			break
+		}
+		c.log.Debugf("Draining stale LOGOUT response (%d)", i+1)
+		response, err = c.receiveResponse(5 * time.Second)
+		if err != nil {
+			return fmt.Errorf("failed to read response while draining stale sessions. %v", err)
+		}
+	}
+
 	err = response.isResponseFor(tc)
 	if err != nil {
-		c.token = response.Packet.Token // TODO I don't like this logic but need to test something. Maybe this can be just simply deleted.
 		return fmt.Errorf("received unexpected packet (not the response waiting for). %s", response)
 	}
 
@@ -561,6 +579,46 @@ func (c *Client) RemovePort(portId byte) error {
 	}
 
 	return nil
+}
+
+// GetPorts returns the list of port IDs configured on the gateway (GET_PORTS 0x30).
+func (c *Client) GetPorts() ([]byte, error) {
+	tc := c.getTransmissionContainer(COMMANDID_GET_PORTS, payload.EmptyPayload())
+	response, err := c.transmitCommandWithResponse(tc)
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode packet. %v", err)
+	}
+
+	if response == nil {
+		return nil, fmt.Errorf("unexpected nil response value")
+	}
+
+	if response.isResponseFor(tc) != nil {
+		return nil, fmt.Errorf("received unexpected packet: %s", response)
+	}
+
+	portsResponse := response.Packet.payload.(*payload.GetPortsResponse)
+	return portsResponse.GetPortIds(), nil
+}
+
+// GetType returns the type of a port (GET_TYPE 0x31). See PORT_TYPE_* constants.
+func (c *Client) GetType(portId byte) (byte, error) {
+	tc := c.getTransmissionContainer(COMMANDID_GET_TYPE, payload.GetTypePayload(portId))
+	response, err := c.transmitCommandWithResponse(tc)
+	if err != nil {
+		return 0, fmt.Errorf("failed to encode packet. %v", err)
+	}
+
+	if response == nil {
+		return 0, fmt.Errorf("unexpected nil response value")
+	}
+
+	if response.isResponseFor(tc) != nil {
+		return 0, fmt.Errorf("received unexpected packet: %s", response)
+	}
+
+	typeResponse := response.Packet.payload.(*payload.GetTypeResponse)
+	return typeResponse.GetPortType(), nil
 }
 
 /*
