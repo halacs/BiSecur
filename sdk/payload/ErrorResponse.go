@@ -67,45 +67,45 @@ func (e *ErrorResponse) Error() string {
 func (e *ErrorResponse) String() string {
 	switch e.GetErrorCode() {
 	case ERROR_COMMAND_NOT_FOUND:
-		return "COMMAND_NOT_FOUND"
+		return "COMMAND NOT FOUND"
 	case ERROR_INVALID_PROTOCOL:
-		return "INVALID_PROTOCOL"
+		return "INVALID PROTOCOL"
 	case ERROR_LOGIN_FAILED:
-		return "LOGIN_FAILED"
+		return "LOGIN FAILED"
 	case ERROR_INVALID_TOKEN:
-		return "INVALID_TOKEN"
+		return "INVALID TOKEN"
 	case ERROR_USER_ALREADY_EXISTS:
-		return "USER_ALREADY_EXISTS"
+		return "USER ALREADY EXISTS"
 	case ERROR_NO_EMPTY_USER_SLOT:
-		return "NO_EMPTY_USER_SLOT"
+		return "NO EMPTY USER SLOT"
 	case ERROR_INVALID_PASSWORD:
-		return "INVALID_PASSWORD"
+		return "INVALID PASSWORD"
 	case ERROR_INVALID_USERNAME:
-		return "INVALID_USERNAME"
+		return "INVALID USERNAME"
 	case ERROR_USER_NOT_FOUND:
-		return "USER_NOT_FOUND"
+		return "USER NOT FOUND"
 	case ERROR_PORT_NOT_FOUND:
-		return "PORT_NOT_FOUND"
+		return "PORT NOT FOUND"
 	case ERROR_PORT_ERROR:
-		return "PORT_ERROR"
+		return "PORT ERROR"
 	case ERROR_GATEWAY_BUSY:
-		return "GATEWAY_BUSY"
+		return "GATEWAY BUSY"
 	case ERROR_PERMISSION_DENIED:
-		return "PERMISSION_DENIED"
+		return "PERMISSION DENIED"
 	case ERROR_NO_EMPTY_GROUP_SLOT:
-		return "NO_EMPTY_GROUP_SLOT"
+		return "NO EMPTY GROUP SLOT"
 	case ERROR_GROUP_NOT_FOUND:
-		return "GROUP_NOT_FOUND"
+		return "GROUP NOT FOUND"
 	case ERROR_INVALID_PAYLOAD:
-		return "INVALID_PAYLOAD"
+		return "INVALID PAYLOAD"
 	case ERROR_OUT_OF_RANGE:
-		return "OUT_OF_RANGE"
+		return "OUT OF RANGE"
 	case ERROR_ADD_PORT_ERROR:
-		return "ADD_PORT_ERROR"
+		return "ADD PORT ERROR"
 	case ERROR_NO_EMPTY_PORT_SLOT:
-		return "NO_EMPTY_PORT_SLOT"
+		return "NO EMPTY PORT SLOT"
 	case ERROR_ADAPTER_BUSY:
-		return "ADAPTER_BUSY"
+		return "ADAPTER BUSY"
 	}
 
 	return "unknown"

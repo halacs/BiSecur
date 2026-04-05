@@ -205,7 +205,10 @@ func (c *Client) GetMac() ([6]byte, error) {
 		return deviceMac, fmt.Errorf("received unexpected packet: %s", response)
 	}
 
-	getMacResponsePayload := response.Packet.payload.(*payload.GetMac)
+	getMacResponsePayload, err := castIfNotError[*payload.GetMac](response)
+	if err != nil {
+		return [6]byte{}, err
+	}
 	deviceMac = getMacResponsePayload.GetMac()
 
 	return deviceMac, nil
@@ -226,7 +229,10 @@ func (c *Client) GetName() (string, error) {
 		return "", fmt.Errorf("received unexpected packet: %s", response)
 	}
 
-	getMacResponsePayload := response.Packet.payload.(*payload.GetNameResponse)
+	getMacResponsePayload, err := castIfNotError[*payload.GetNameResponse](response)
+	if err != nil {
+		return "", err
+	}
 	name := getMacResponsePayload.GetName()
 	return name, nil
 }
@@ -432,13 +438,9 @@ func (c *Client) GetTransition(portID byte) (*payload.HmGetTransitionResponse, e
 		return nil, fmt.Errorf("unexpected nil response value")
 	}
 
-	transitionResponse, ok := response.Packet.payload.(*payload.HmGetTransitionResponse)
-	if !ok {
-		errorResponse, isErrorResponse := response.Packet.payload.(*payload.ErrorResponse)
-		if isErrorResponse {
-			return nil, errorResponse
-		}
-		return nil, fmt.Errorf("received unexpected packet (typecast failed): %s", response)
+	transitionResponse, err := castIfNotError[*payload.HmGetTransitionResponse](response)
+	if err != nil {
+		return nil, err
 	}
 
 	if response.isResponseFor(tc) != nil {
@@ -464,7 +466,11 @@ func (c *Client) AddUser(userName string, password string) (userId byte, err err
 		return 0, fmt.Errorf("received unexpected packet: %s. %v", response, err)
 	}
 
-	transitionResponse := response.Packet.payload.(*payload.AddUserResponse)
+	transitionResponse, err := castIfNotError[*payload.AddUserResponse](response)
+	if err != nil {
+		return 0, err
+	}
+
 	newUserId := transitionResponse.GetUserId()
 	return newUserId, nil
 }
@@ -484,7 +490,11 @@ func (c *Client) RemoveUser(userId byte) error {
 		return fmt.Errorf("received unexpected packet: %s", response)
 	}
 
-	transitionResponse := response.Packet.payload.(*payload.RemoveUserResponse)
+	transitionResponse, err := castIfNotError[*payload.RemoveUserResponse](response)
+	if err != nil {
+		return err
+	}
+
 	if transitionResponse.GetUserId() != userId {
 		return fmt.Errorf("failed to remove user. %v", transitionResponse)
 	}
@@ -529,7 +539,11 @@ func (c *Client) AddPort() (portId byte, err error) {
 		return 0, fmt.Errorf("received unexpected packet: %s. %v", response, err)
 	}
 
-	portIdResponse := response.Packet.payload.(*payload.PortIdResponse)
+	portIdResponse, err := castIfNotError[*payload.PortIdResponse](response)
+	if err != nil {
+		return 0, err
+	}
+
 	return portIdResponse.GetPortId(), nil
 }
 
@@ -553,7 +567,11 @@ func (c *Client) InheritPort() (portId byte, err error) {
 		return 0, fmt.Errorf("received unexpected packet: %s. %v", response, err)
 	}
 
-	portIdResponse := response.Packet.payload.(*payload.PortIdResponse)
+	portIdResponse, err := castIfNotError[*payload.PortIdResponse](response)
+	if err != nil {
+		return 0, err
+	}
+
 	return portIdResponse.GetPortId(), nil
 }
 
@@ -573,7 +591,11 @@ func (c *Client) RemovePort(portId byte) error {
 		return fmt.Errorf("received unexpected packet: %s", response)
 	}
 
-	portIdResponse := response.Packet.payload.(*payload.PortIdResponse)
+	portIdResponse, err := castIfNotError[*payload.PortIdResponse](response)
+	if err != nil {
+		return err
+	}
+
 	if portIdResponse.GetPortId() != portId {
 		return fmt.Errorf("failed to remove port. %v", portIdResponse)
 	}
@@ -597,8 +619,12 @@ func (c *Client) GetPorts() ([]byte, error) {
 		return nil, fmt.Errorf("received unexpected packet: %s", response)
 	}
 
-	portsResponse := response.Packet.payload.(*payload.GetPortsResponse)
-	return portsResponse.GetPortIds(), nil
+	portsResponse, err := castIfNotError[*payload.GetPortsResponse](response)
+	if err != nil {
+		return nil, err
+	}
+
+	return (*portsResponse).GetPortIds(), nil
 }
 
 // GetType returns the type of a port (GET_TYPE 0x31). See PORT_TYPE_* constants.
@@ -617,7 +643,10 @@ func (c *Client) GetType(portId byte) (byte, error) {
 		return 0, fmt.Errorf("received unexpected packet: %s", response)
 	}
 
-	typeResponse := response.Packet.payload.(*payload.GetTypeResponse)
+	typeResponse, err := castIfNotError[*payload.GetTypeResponse](response)
+	if err != nil {
+		return 0, err
+	}
 	return typeResponse.GetPortType(), nil
 }
 
@@ -630,3 +659,27 @@ func (c *Client) GetUserRights(userId byte, ???) error {
 	return nil
 }
 */
+
+// Case response to ErrorResponse if possible, otherwise cast response to type T if type match
+func castIfNotError[T payload.PayloadInterface](response *TransmissionContainer) (T, error) {
+	var t T
+
+	err := isErrorResponse(response)
+	if err != nil {
+		return t, err
+	}
+
+	t, ok := response.Packet.payload.(T)
+	if !ok {
+		return t, fmt.Errorf("received unexpected packet (typecast failed): %s", response)
+	}
+	return t, nil
+}
+
+func isErrorResponse(response *TransmissionContainer) error {
+	errorResponse, isErrorResponseType := response.Packet.payload.(*payload.ErrorResponse)
+	if isErrorResponseType {
+		return fmt.Errorf("%s", errorResponse.Error())
+	}
+	return nil
+}
