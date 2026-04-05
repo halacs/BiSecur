@@ -1,9 +1,9 @@
 package cmd
 
 import (
+	"fmt"
 	"halsecur/cli"
 	"halsecur/cli/bisecur"
-	"fmt"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -43,8 +43,9 @@ func autoLogin(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return fmt.Errorf("failed to auto login. %v", err)
 		}
+	} else {
+		cli.Log.Debugf("Token is still valid.")
 	}
 
-	cli.Log.Debugf("Token is still valid.")
 	return nil
 }

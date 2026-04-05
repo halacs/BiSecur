@@ -1,10 +1,10 @@
 package cmd
 
 import (
+	"fmt"
 	"halsecur/cli"
 	"halsecur/cli/bisecur"
 	"halsecur/cli/utils"
-	"fmt"
 	"os"
 	"time"
 
@@ -49,7 +49,7 @@ func loginCmdFunc() error {
 		return err
 	}
 
-	cli.Log.Infof("Token: 0x%X", token)
+	cli.Log.Infof("New token: 0x%X", token)
 
 	// Store token in persistent config
 	viper.Set(ArgNameToken, token)
