@@ -14,11 +14,6 @@ Hörmann officially supported this gateway version until end of 2023 / beginning
 
 ![gateway image](gateway.webp)
 
-## TODOs
-* [ ] Assign new door to the gateway
-* [ ] Delete assigned door from the gateway
-* [ ] Manage multiple doors with the same gateway in a single process 
-
 ## Usage
 ```
 $ ./halsecur 
@@ -28,15 +23,17 @@ Usage:
   halsecur [command]
 
 Available Commands:
-  logout      
   completion  Generate the autocompletion script for the specified shell
   discover    Discover Hörmann BiSecur gateways on the local network
   get-name    Queries the name of the Hörmann BiSecur gateway
   groups      Manages doors defined in your Hörmann BiSecur gateway.
   ha          Start MQTT client compatible with Home assistant auto discovery
   help        Help about any command
-  login       
+  login
+  logout
   ping        Check if your Hörmann BiSecur gateway is reachable or not.
+  ports       Manages ports (paired devices) on your Hörmann BiSecur gateway.
+  ports-list  List all ports and their types on the gateway
   set-state   Open or close a door connected to your Hörmann BiSecur gateway.
   status      Queries the status (open/closed/etc) of your door.
   users       Manages users defined in your Hörmann BiSecur gateway.
@@ -68,13 +65,14 @@ As far as I know port if always 4000 so most probably it never need to be change
 
 ```bash
 autologin: true
-debug: false
-deviceport: 0
-host: 192.168.45.41
-deviceport: 0
-deviceports: [0]
+debug: true
+deviceports:
+    - 0
+doorstatussupported: true
+doperiodicrequests: true
+host: 192.168.3.232
 json: false
-lastlogin: 0
+lastlogin: 1775408186171934939
 mac: 54:10:EC:85:28:BB
 mqttbasetopic: ADD-YOUR-MQTT-BASE-TOPIC
 mqttdevicename: garage
