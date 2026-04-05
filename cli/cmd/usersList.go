@@ -12,7 +12,7 @@ import (
 )
 
 var usersListCmd = &cobra.Command{
-	Use:     "groups",
+	Use:     "list",
 	Short:   "List current gateway users",
 	Long:    `List current gateway users`,
 	PreRunE: preRunFuncs,
