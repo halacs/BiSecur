@@ -34,4 +34,5 @@ const (
 	HomeAssistantCmdName           = "ha"
 	ArgDoorStatusSupported         = "doorStatusSupported"
 	ArgDevicePortsName             = "devicePorts"
+	PortsCmdName                   = "ports"
 )
