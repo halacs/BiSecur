@@ -6,6 +6,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [v2.3.0]
+
 ### Added
 - Add wire protocol documentation (#17)
 - Add "ports-list" command that lists all ports with their types (#20)
