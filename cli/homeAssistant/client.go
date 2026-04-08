@@ -32,7 +32,8 @@ type HomeAssistanceMqttClient struct {
 	deviceUsername         string
 	devicePassword         string
 	token                  uint32
-	tokenCreated           time.Time
+	lastLoginTime          time.Time
+	autoTokenRefresh       bool
 	mqttServerName         string
 	mqttClientId           string
 	mqttServerPort         int
@@ -51,9 +52,9 @@ type HomeAssistanceMqttClient struct {
 	doorStatusSupported    bool
 }
 
-func NewHomeAssistanceMqttClient(log *logrus.Logger, localMac [6]byte, deviceMac [6]byte, deviceUsername string, devicePassword string, host string, port int, token uint32, mqttServerName string, mqttClientId string,
+func NewHomeAssistanceMqttClient(log *logrus.Logger, localMac [6]byte, deviceMac [6]byte, deviceUsername string, devicePassword string, host string, port int, token uint32, lastLoginTime time.Time, mqttServerName string, mqttClientId string,
 	mqttServerPort int, mqttServerTls bool, mqttServerTlsValidaton bool, mqttBaseTopic string,
-	mqttDeviceName string, mqttUserName string, mqttPassword string, mqttTelePeriod time.Duration, mqttTelePeriodFast time.Duration, devicePorts []byte, doorStatusSupported bool) (*HomeAssistanceMqttClient, error) {
+	mqttDeviceName string, mqttUserName string, mqttPassword string, mqttTelePeriod time.Duration, mqttTelePeriodFast time.Duration, devicePorts []byte, doorStatusSupported bool, autoTokenRefresh bool) (*HomeAssistanceMqttClient, error) {
 
 	ha := &HomeAssistanceMqttClient{
 		localMac:               localMac,
@@ -63,6 +64,8 @@ func NewHomeAssistanceMqttClient(log *logrus.Logger, localMac [6]byte, deviceMac
 		host:                   host,
 		port:                   port,
 		token:                  token,
+		lastLoginTime:          lastLoginTime,
+		autoTokenRefresh:       autoTokenRefresh,
 		mqttServerName:         mqttServerName,
 		mqttClientId:           mqttClientId,
 		mqttServerPort:         mqttServerPort,

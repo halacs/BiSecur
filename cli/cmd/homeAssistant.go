@@ -39,6 +39,10 @@ func init() {
 			host := viper.GetString(ArgNameHost)
 			port := viper.GetInt(ArgNamePort)
 			token := viper.GetUint32(ArgNameToken)
+
+			lastLoginTimeStamp := viper.GetInt64(ArgNameLastLoginTimeStamp)
+			lastLoginTime := time.UnixMicro(lastLoginTimeStamp)
+
 			username := viper.GetString(ArgNameUsername)
 			password := viper.GetString(ArgNamePassword)
 
@@ -55,9 +59,24 @@ func init() {
 			devicePorts = viper.GetIntSlice(ArgDevicePortsName)
 			doorStatusSupported = viper.GetBool(ArgDoorStatusSupported)
 
+			autoTokenRefresh := viper.GetBool(ArgNameAutoLogin)
+			if !autoTokenRefresh {
+				cli.Log.Warningf("Auto re-login is disabled by '%s' option.", ArgNameAutoLogin)
+			}
+
 			if len(devicePorts) == 0 {
 				cli.Log.Warnf("%s parameter empty. This might be wrong.", ArgDevicePortsName)
 			}
+
+			// Store token in persistent config
+			defer func() {
+				viper.Set(ArgNameToken, token)
+				viper.Set(ArgNameLastLoginTimeStamp, lastLoginTime)
+				err := viper.WriteConfig()
+				if err != nil {
+					cli.Log.Errorf("Failed to save new configuration. %v", err)
+				}
+			}()
 
 			mqttClientId := fmt.Sprintf("clientId_%s", deviceMac)
 
@@ -68,10 +87,10 @@ func init() {
 			}
 
 			ha, err := homeAssistant.NewHomeAssistanceMqttClient(
-				cli.Log, localMac, mac, username, password, host, port, token,
+				cli.Log, localMac, mac, username, password, host, port, token, lastLoginTime,
 				mqttServerName, mqttClientId, mqttServerPort, mqttServerTls, mqttServerTlsValidaton,
 				mqttBaseTopic, mqttDeviceName, mqttUserName, mqttPassword, mqttTelePeriod, mqttTelePeriodFast,
-				utils.IntArrayToByteArray(devicePorts), doorStatusSupported,
+				utils.IntArrayToByteArray(devicePorts), doorStatusSupported, autoTokenRefresh,
 			)
 			if err != nil {
 				cli.Log.Fatalf("%v", err)

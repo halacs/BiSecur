@@ -65,7 +65,11 @@ func (e *ErrorResponse) Error() string {
 }
 
 func (e *ErrorResponse) String() string {
-	switch e.GetErrorCode() {
+	return GetErrorString(e.GetErrorCode())
+}
+
+func GetErrorString(errorCode byte) string {
+	switch errorCode {
 	case ERROR_COMMAND_NOT_FOUND:
 		return "COMMAND NOT FOUND"
 	case ERROR_INVALID_PROTOCOL:

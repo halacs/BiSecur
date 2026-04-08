@@ -1,17 +1,22 @@
 package homeAssistant
 
 import (
+	"fmt"
 	"halsecur/cli"
 	"halsecur/cli/bisecur"
 	"halsecur/cli/utils"
 	"halsecur/sdk/payload"
-	"fmt"
 	"time"
 )
 
 func (ha *HomeAssistanceMqttClient) autoLoginBisecur() error {
-	if ha.tokenCreated.Add(bisecur.TokenExpirationTime).Before(time.Now()) {
-		ha.log.Info("Token expired.")
+	if ha.lastLoginTime.Add(bisecur.TokenExpirationTime).Before(time.Now()) {
+		if !ha.autoTokenRefresh && ha.token != 0 {
+			ha.log.Debug("Token is potentially expired but auto login disabled so will not renew it. If you want to trigger a login and thus new token, zero token value in the config file or issue manual login in the command line interface.")
+			return nil
+		}
+
+		ha.log.Info("Token expired or removed. Logging in...")
 		return ha.forceReLogin()
 	}
 	return nil
@@ -27,7 +32,7 @@ func (ha *HomeAssistanceMqttClient) LogoutBisecur() error {
 
 	// Note that the token has been invalidated
 	ha.token = 0
-	ha.tokenCreated = time.UnixMicro(0)
+	ha.lastLoginTime = time.UnixMicro(0)
 
 	return nil
 }
@@ -43,17 +48,17 @@ func (ha *HomeAssistanceMqttClient) forceReLogin() error {
 	}
 	// clear token and the timestamp of the token after the successful logout
 	ha.token = 0
-	ha.tokenCreated = time.UnixMicro(0)
+	ha.lastLoginTime = time.UnixMicro(0)
 
 	// Not sure, this is really needed, but since I know Hormann BS gateway can become crazy if it gets overloaded...
-	time.Sleep(2 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	ha.token, err = bisecur.Login(ha.localMac, ha.deviceMac, ha.host, ha.port, ha.deviceUsername, ha.devicePassword)
 	if err != nil {
 		return fmt.Errorf("login failed. %v", err)
 	}
 
-	ha.tokenCreated = time.Now() // note when token was received
+	ha.lastLoginTime = time.Now() // note when token was received
 
 	return nil
 }
@@ -230,12 +235,12 @@ func (ha *HomeAssistanceMqttClient) getDoorStatus(devicePort byte) (direction st
 		var err2 error
 		status, err2 = bisecur.GetStatus(ha.localMac, ha.deviceMac, ha.host, ha.port, devicePort, ha.token)
 		if err2 != nil {
-			if err2.Error() == "PERMISSION_DENIED" { // TODO don't like string comparisons so should be refactored somehow while relogin also should be make more generic (think of other commands)
-				// Does it make sense to force relogin after a PERMISSION_DENIED error?
-				time.Sleep(2 * time.Second)
+			if err2.Error() == payload.GetErrorString(payload.ERROR_PERMISSION_DENIED) { // TODO don't like string comparisons so should be refactored somehow while relogin also should be make more generic (think of other commands)
+				ha.log.Infof("Got PERMISSION DENIED error when tried to get door status. Get a new token and try again.")
+				time.Sleep(3 * time.Second)
 				err3 := ha.forceReLogin()
 				if err3 != nil {
-					return fmt.Errorf("error while re-login after a PERMISSION_DENIED error. %v. %v", err2, err3)
+					return fmt.Errorf("error while re-login after a PERMISSION DENIED error. %v. %v", err2, err3)
 				}
 			}
 		}

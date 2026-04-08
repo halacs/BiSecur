@@ -10,17 +10,20 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Add wire protocol documentation (#17)
 - Add "ports-list" command that lists all ports with their types (#20)
 - Add port enumeration to SDK (GET_PORTS, GET_TYPE) (#20)
+- If `autologin` flag is false in the configuration, Home Assistant integration will not do *PERIODIC* logout-login sequency to renew the token use to communication with the gateway
 
 ### Changed
 - Updated linter versions and fixed code smells
 - 'groups group' subcommand has been renamed to 'groups list'
 - 'users group' subcommand has been renamed to 'users list'
 - README updated
+- Increased gateway authorization token lifecycle period (automatic logout-login sequence happens less frequently: only in every 6 hours)
 
 ### Fixed
 - Drain stale LOGOUT responses during login (#19)
 - Fixed debug logging: byte array was logged as an ascii string instead of hex string
 - Because of unchecked type cast, panic occurred when a command failed, for example, because of permission denied response
+- Home Assistant integration now use token and its timestamp from the config file and write renewd token back into it
 
 ## [v2.2.3]
 

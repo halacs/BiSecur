@@ -14,6 +14,9 @@ Hörmann officially supported this gateway version until end of 2023 / beginning
 
 ![gateway image](gateway.webp)
 
+### TODOs
+- [ ] Rework gateway access token handling: at least in HA integration, token should be renewed only when permission denied error received instead of timestamp/timeout based renewal (partially done already and stable if `autologin` is off)
+
 ## Usage
 ```
 $ ./halsecur 
