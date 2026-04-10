@@ -6,6 +6,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [v2.3.1]
+
+### Fixed
+- Fix bug preventing door open/close actions in Home Assistant integration
+
 ## [v2.3.0]
 
 ### Added
