@@ -10,8 +10,8 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"regexp"
 	"strconv"
-	"strings"
 	"syscall"
 	"time"
 
@@ -94,7 +94,13 @@ func (ha *HomeAssistanceMqttClient) homeAssistantStatusMessagePubHandler(client 
 func (ha *HomeAssistanceMqttClient) homeAssistantSetPossitionMessagePubHandler(client mqtt.Client, msg mqtt.Message) {
 	ha.log.Debugf("Received set position message: %s from topic: %s", msg.Payload(), msg.Topic())
 
-	devicePortInt, err := strconv.Atoi(strings.Split(msg.Topic(), "/")[2]) // extract device port from topic
+	// Pattern breakdown:
+	// .+/cmnd/      -> matches any prefix ending with /cmnd/
+	// ([0-9]+)      -> capturing group for one or more digits (the ID)
+	// /position$    -> matches the fixed suffix /position at the end of the string
+	re := regexp.MustCompile(`.+/cmnd/([0-9]+)/position$`)
+	devicePortString := re.FindStringSubmatch(msg.Topic())[1]
+	devicePortInt, err := strconv.Atoi(devicePortString) // extract device port from topic
 	if err != nil {
 		ha.log.Errorf("failed to parse device port. %v", err)
 		return
