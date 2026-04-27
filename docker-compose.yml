@@ -6,4 +6,5 @@ services:
     volumes:
       - ./config.yaml:/config.yaml
     restart: unless-stopped
+    stop_grace_period: 60s  # SIGKILL after 60s
     #network_mode: host # needed only for BiSecure gateway discovery

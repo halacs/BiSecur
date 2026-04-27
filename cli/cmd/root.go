@@ -33,17 +33,17 @@ func Execute() {
 	}
 }
 
-var (
-	host          string
-	port          int
-	token         uint32
-	lastLoginTime int64
-	username      string
-	password      string
-	deviceMac     string
-)
-
 func init() {
+	var (
+		host          string
+		port          int
+		token         uint32
+		lastLoginTime int64
+		username      string
+		password      string
+		deviceMac     string
+	)
+
 	cli.Log = logger.NewLogger()
 
 	rootCmd.PersistentFlags().Uint32Var(&token, ArgNameToken, 0x0, "Valid authentication token")

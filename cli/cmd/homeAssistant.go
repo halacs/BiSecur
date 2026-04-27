@@ -67,16 +67,16 @@ func init() {
 		Run: func(cmd *cobra.Command, args []string) {
 			var ha *homeAssistant.HomeAssistanceMqttClient
 
-			deviceMac = viper.GetString(ArgNameDeviceMac)
-			host = viper.GetString(ArgNameHost)
-			port = viper.GetInt(ArgNamePort)
-			token = viper.GetUint32(ArgNameToken)
+			deviceMac := viper.GetString(ArgNameDeviceMac)
+			host := viper.GetString(ArgNameHost)
+			port := viper.GetInt(ArgNamePort)
+			token := viper.GetUint32(ArgNameToken)
 
-			lastLoginTime = viper.GetInt64(ArgNameLastLoginTimeStamp)
+			lastLoginTime := viper.GetInt64(ArgNameLastLoginTimeStamp)
 			lastLoginTimeDt := time.UnixMicro(lastLoginTime)
 
-			username = viper.GetString(ArgNameUsername)
-			password = viper.GetString(ArgNamePassword)
+			username := viper.GetString(ArgNameUsername)
+			password := viper.GetString(ArgNamePassword)
 
 			mqttServerName = viper.GetString(ArgMqttServerName)
 			mqttServerPort = viper.GetInt(ArgMqttPortName)
@@ -100,21 +100,6 @@ func init() {
 				cli.Log.Warnf("%s parameter empty. This might be wrong.", ArgDevicePortsName)
 			}
 
-			// Store token in persistent
-			defer func() {
-				viper.Set(ArgNameToken, token)
-				viper.Set(ArgNameLastLoginTimeStamp, lastLoginTime)
-				_, err := os.Stat("config.yaml")
-				if os.IsNotExist(err) {
-					err = viper.WriteConfigAs("config.yaml")
-				} else {
-					err = viper.WriteConfig()
-				}
-				if err != nil {
-					cli.Log.Errorf("Failed to save new configuration. %v", err)
-				}
-			}()
-
 			mqttClientId := fmt.Sprintf("clientId_%s", deviceMac)
 
 			mac, err := utils.ParesMacString(deviceMac)
@@ -127,7 +112,9 @@ func init() {
 			defer func() {
 				newToken := ha.GetToken()
 				newTs := ha.GetLastLoginTime()
-				cli.Log.Debugf("Saving values of token (%v) and lastLoginTime (%v) to config file...", newToken, newTs)
+
+				cli.Log.Debugf("Saving values of token (%v) and lastLoginTime (%v == %d) to config file...", newToken, newTs, newTs.UnixMicro())
+
 				viper.Set(ArgNameToken, newToken)
 				viper.Set(ArgNameLastLoginTimeStamp, newTs.UnixMicro())
 
