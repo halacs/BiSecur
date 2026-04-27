@@ -1,19 +1,26 @@
 package cmd
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"halsecur/cli"
 	"halsecur/cli/homeAssistant"
 	"halsecur/cli/utils"
 	"os"
+	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+)
+
+const (
+	configFileName = "config.yaml"
 )
 
 func getIntSlice(key string) []int {
@@ -58,16 +65,18 @@ func init() {
 		Long:    ``,
 		PreRunE: preRunFuncs,
 		Run: func(cmd *cobra.Command, args []string) {
-			deviceMac := viper.GetString(ArgNameDeviceMac)
-			host := viper.GetString(ArgNameHost)
-			port := viper.GetInt(ArgNamePort)
-			token := viper.GetUint32(ArgNameToken)
+			var ha *homeAssistant.HomeAssistanceMqttClient
 
-			lastLoginTimeStamp := viper.GetInt64(ArgNameLastLoginTimeStamp)
-			lastLoginTime := time.UnixMicro(lastLoginTimeStamp)
+			deviceMac = viper.GetString(ArgNameDeviceMac)
+			host = viper.GetString(ArgNameHost)
+			port = viper.GetInt(ArgNamePort)
+			token = viper.GetUint32(ArgNameToken)
 
-			username := viper.GetString(ArgNameUsername)
-			password := viper.GetString(ArgNamePassword)
+			lastLoginTime = viper.GetInt64(ArgNameLastLoginTimeStamp)
+			lastLoginTimeDt := time.UnixMicro(lastLoginTime)
+
+			username = viper.GetString(ArgNameUsername)
+			password = viper.GetString(ArgNamePassword)
 
 			mqttServerName = viper.GetString(ArgMqttServerName)
 			mqttServerPort = viper.GetInt(ArgMqttPortName)
@@ -114,8 +123,30 @@ func init() {
 				os.Exit(1)
 			}
 
-			ha, err := homeAssistant.NewHomeAssistanceMqttClient(
-				cli.Log, localMac, mac, username, password, host, port, token, lastLoginTime,
+			// Store token in persistent config
+			defer func() {
+				newToken := ha.GetToken()
+				newTs := ha.GetLastLoginTime()
+				cli.Log.Debugf("Saving values of token (%v) and lastLoginTime (%v) to config file...", newToken, newTs)
+				viper.Set(ArgNameToken, newToken)
+				viper.Set(ArgNameLastLoginTimeStamp, newTs.UnixMicro())
+
+				_, err := os.Stat(configFileName)
+				if os.IsNotExist(err) {
+					err = viper.WriteConfigAs(configFileName)
+				} else {
+					err = viper.WriteConfig()
+				}
+				if err != nil {
+					cli.Log.Errorf("failed to save new configuration. %v", err)
+				}
+			}()
+
+			// We need to terminate based on system signals. This is essential to save token when exiting.
+			ctx, _ := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill, syscall.SIGTERM, syscall.SIGINT)
+
+			ha, err = homeAssistant.NewHomeAssistanceMqttClient(
+				ctx, cli.Log, localMac, mac, username, password, host, port, token, lastLoginTimeDt,
 				mqttServerName, mqttClientId, mqttServerPort, mqttServerTls, mqttServerTlsValidaton,
 				mqttBaseTopic, mqttDeviceName, mqttUserName, mqttPassword, mqttTelePeriod, mqttTelePeriodFast,
 				utils.IntArrayToByteArray(devicePorts), doorStatusSupported, autoTokenRefresh,
@@ -130,6 +161,9 @@ func init() {
 				cli.Log.Fatalf("%v", err)
 				os.Exit(3)
 			}
+
+			<-ctx.Done()
+			cli.Log.Infof("Exiting...")
 		},
 	}
 	rootCmd.AddCommand(haCmd)

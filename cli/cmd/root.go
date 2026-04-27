@@ -1,11 +1,12 @@
 package cmd
 
 import (
+	"fmt"
 	"halsecur/cli"
 	"halsecur/logger"
-	"fmt"
-	"github.com/spf13/viper"
 	"os"
+
+	"github.com/spf13/viper"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -32,19 +33,21 @@ func Execute() {
 	}
 }
 
+var (
+	host          string
+	port          int
+	token         uint32
+	lastLoginTime int64
+	username      string
+	password      string
+	deviceMac     string
+)
+
 func init() {
 	cli.Log = logger.NewLogger()
 
-	var (
-		host      string
-		port      int
-		token     uint32
-		username  string
-		password  string
-		deviceMac string
-	)
-
 	rootCmd.PersistentFlags().Uint32Var(&token, ArgNameToken, 0x0, "Valid authentication token")
+	rootCmd.PersistentFlags().Int64Var(&lastLoginTime, ArgNameTokenLastTime, 0x0, "Valid authentication token timestamp")
 	rootCmd.PersistentFlags().StringVar(&username, ArgNameUsername, "", "Valid username")
 	rootCmd.PersistentFlags().StringVar(&password, ArgNamePassword, "", "Valid password belongs to the given username")
 	rootCmd.PersistentFlags().StringVar(&host, ArgNameHost, "", "IP or host name or the Hörmann BiSecure gateway")

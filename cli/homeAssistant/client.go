@@ -9,10 +9,8 @@ import (
 	"halsecur/cli/utils"
 	"log"
 	"os"
-	"os/signal"
 	"regexp"
 	"strconv"
-	"syscall"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -25,6 +23,7 @@ const (
 )
 
 type HomeAssistanceMqttClient struct {
+	ctx                    context.Context
 	localMac               [6]byte
 	deviceMac              [6]byte
 	host                   string
@@ -52,11 +51,12 @@ type HomeAssistanceMqttClient struct {
 	doorStatusSupported    bool
 }
 
-func NewHomeAssistanceMqttClient(log *logrus.Logger, localMac [6]byte, deviceMac [6]byte, deviceUsername string, devicePassword string, host string, port int, token uint32, lastLoginTime time.Time, mqttServerName string, mqttClientId string,
+func NewHomeAssistanceMqttClient(ctx context.Context, log *logrus.Logger, localMac [6]byte, deviceMac [6]byte, deviceUsername string, devicePassword string, host string, port int, token uint32, lastLoginTime time.Time, mqttServerName string, mqttClientId string,
 	mqttServerPort int, mqttServerTls bool, mqttServerTlsValidaton bool, mqttBaseTopic string,
 	mqttDeviceName string, mqttUserName string, mqttPassword string, mqttTelePeriod time.Duration, mqttTelePeriodFast time.Duration, devicePorts []byte, doorStatusSupported bool, autoTokenRefresh bool) (*HomeAssistanceMqttClient, error) {
 
 	ha := &HomeAssistanceMqttClient{
+		ctx:                    ctx,
 		localMac:               localMac,
 		deviceMac:              deviceMac,
 		deviceUsername:         deviceUsername,
@@ -211,12 +211,15 @@ func (ha *HomeAssistanceMqttClient) Start() error {
 
 		ha.log.Infof("Disconnected from MQTT server")
 
-		err = ha.LogoutBisecur()
-		if err != nil {
-			ha.log.Errorf("Error logging out of bisecur")
-		} else {
-			ha.log.Infof("Logged out of bisecur")
-		}
+		/*
+			// TODO does this logout section make sense in this environment? I mean, generally, yes definitely, but with this buggy gateway hardware?
+			err = ha.LogoutBisecur()
+			if err != nil {
+				ha.log.Errorf("Error logging out of bisecur")
+			} else {
+				ha.log.Infof("Logged out of bisecur")
+			}
+		*/
 	}()
 
 	//mockDoor.StartTicker()
@@ -233,13 +236,12 @@ func (ha *HomeAssistanceMqttClient) Start() error {
 
 	ticker := time.NewTicker(ha.mqttTelePeriod)
 	tickerFast := time.NewTicker(ha.mqttTelePeriodFast)
-	done, _ := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill, syscall.SIGTERM, syscall.SIGINT)
 
 out:
 	for {
 		select {
-		case <-done.Done():
-			ha.log.Infof("Exiting")
+		case <-ha.ctx.Done():
+			ha.log.Debug("Exiting HA instance")
 			break out
 		case <-ticker.C:
 			if ha.doorStatusSupported {
@@ -260,7 +262,7 @@ out:
 
 			if ha.doorStatusSupported {
 				for _, devicePort := range ha.devicePorts {
-					err := ha.doorStatus(byte(devicePort))
+					err := ha.doorStatus(devicePort)
 					if err != nil {
 						ha.log.Errorf("failed to publish current door status. %v", err)
 						continue
@@ -436,4 +438,12 @@ func (ha *HomeAssistanceMqttClient) newTlsConfig() *tls.Config {
 		InsecureSkipVerify: ha.mqttServerTlsValidaton, // #nosec #G402
 		//Certificates:       []tls.Certificate{clientKeyPair},
 	}
+}
+
+func (ha *HomeAssistanceMqttClient) GetToken() uint32 {
+	return ha.token
+}
+
+func (ha *HomeAssistanceMqttClient) GetLastLoginTime() time.Time {
+	return ha.lastLoginTime
 }

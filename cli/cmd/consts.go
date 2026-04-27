@@ -4,6 +4,7 @@ const (
 	ArgNameUserId                  = "uid"
 	ArgNameNewPassword             = "newpassword"
 	ArgNameToken                   = "token"
+	ArgNameTokenLastTime           = "lastlogin"
 	ArgNameUsername                = "username"
 	ArgNamePassword                = "password"
 	ArgNameHost                    = "host"

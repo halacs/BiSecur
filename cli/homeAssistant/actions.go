@@ -11,7 +11,7 @@ import (
 
 func (ha *HomeAssistanceMqttClient) autoLoginBisecur() error {
 	if ha.lastLoginTime.Add(bisecur.TokenExpirationTime).Before(time.Now()) {
-		if !ha.autoTokenRefresh && ha.token != 0 {
+		if !ha.autoTokenRefresh {
 			ha.log.Debug("Token is potentially expired but auto login disabled so will not renew it. If you want to trigger a login and thus new token, zero token value in the config file or issue manual login in the command line interface.")
 			return nil
 		}
@@ -32,7 +32,7 @@ func (ha *HomeAssistanceMqttClient) LogoutBisecur() error {
 
 	// Note that the token has been invalidated
 	ha.token = 0
-	ha.lastLoginTime = time.UnixMicro(0)
+	ha.lastLoginTime = time.Now()
 
 	return nil
 }
@@ -231,7 +231,7 @@ func (ha *HomeAssistanceMqttClient) getDoorStatus(devicePort byte) (direction st
 	}
 
 	var status *payload.HmGetTransitionResponse
-	err = utils.RetryAlways(utils.RetryCount, func() error {
+	err = utils.RetryAlwaysWithContext(ha.ctx, utils.RetryCount, func() error {
 		var err2 error
 		status, err2 = bisecur.GetStatus(ha.localMac, ha.deviceMac, ha.host, ha.port, devicePort, ha.token)
 		if err2 != nil {

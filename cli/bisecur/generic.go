@@ -1,6 +1,7 @@
 package bisecur
 
 import (
+	"context"
 	"halsecur/cli"
 	"halsecur/cli/utils"
 	"halsecur/sdk"
@@ -16,7 +17,7 @@ func GenericWithRetryAlways(localMac [6]byte, mac [6]byte, host string, port int
 }
 func GenericWithRetry(localMac [6]byte, mac [6]byte, host string, port int, token uint32, retryCount int, delayIfError time.Duration, isRetriableError func(error) bool, f func(c *sdk.Client) error) error {
 	return Generic(localMac, mac, host, port, token, func(client *sdk.Client) error {
-		return utils.Retry(retryCount, delayIfError, func() error {
+		return utils.Retry(context.Background(), retryCount, delayIfError, func() error {
 			return f(client)
 		}, isRetriableError)
 	})
