@@ -7,11 +7,34 @@ import (
 	"halsecur/cli/homeAssistant"
 	"halsecur/cli/utils"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
+	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
+
+func getIntSlice(key string) []int {
+	raw := viper.Get(key)
+
+	if slice, err := cast.ToIntSliceE(raw); err == nil && len(slice) > 0 {
+		return slice
+	}
+
+	str := viper.GetString(key)
+	if str == "" {
+		return []int{}
+	}
+	var result []int
+	for _, s := range strings.Split(str, ",") {
+		if n, err := strconv.Atoi(strings.TrimSpace(s)); err == nil {
+			result = append(result, n)
+		}
+	}
+	return result
+}
 
 func init() {
 	var (
@@ -56,7 +79,7 @@ func init() {
 			mqttPassword = viper.GetString(ArgMqttPasswordName)
 			mqttTelePeriod = viper.GetDuration(ArgMqttTelePeriodName)
 			mqttTelePeriodFast = viper.GetDuration(ArgMqttTelePeriodFastName)
-			devicePorts = viper.GetIntSlice(ArgDevicePortsName)
+			devicePorts = getIntSlice(ArgDevicePortsName)
 			doorStatusSupported = viper.GetBool(ArgDoorStatusSupported)
 
 			autoTokenRefresh := viper.GetBool(ArgNameAutoLogin)
@@ -68,11 +91,16 @@ func init() {
 				cli.Log.Warnf("%s parameter empty. This might be wrong.", ArgDevicePortsName)
 			}
 
-			// Store token in persistent config
+			// Store token in persistent
 			defer func() {
 				viper.Set(ArgNameToken, token)
 				viper.Set(ArgNameLastLoginTimeStamp, lastLoginTime)
-				err := viper.WriteConfig()
+				_, err := os.Stat("config.yaml")
+				if os.IsNotExist(err) {
+					err = viper.WriteConfigAs("config.yaml")
+				} else {
+					err = viper.WriteConfig()
+				}
 				if err != nil {
 					cli.Log.Errorf("Failed to save new configuration. %v", err)
 				}
@@ -124,4 +152,10 @@ func init() {
 		cli.Log.Fatalf("failed to bind flags: %v", err)
 		os.Exit(1)
 	}
+
+	// ENV support
+	viper.SetEnvPrefix("HALSECUR")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	viper.AutomaticEnv()
+
 }
