@@ -6,6 +6,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Fixed
+- Now it does graceful shutdown when receives system signal
+
+### Changed
+- Environment variable names got prefix to ensure uniqueness
+
 ## [v2.3.1]
 
 ### Fixed
