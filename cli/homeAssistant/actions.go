@@ -230,14 +230,17 @@ func (ha *HomeAssistanceMqttClient) getDoorStatus(devicePort byte) (direction st
 		return utils.UNKNOWN, 0, fmt.Errorf("auto login failed. %v", err)
 	}
 
+	retryAttempt := 0
 	var status *payload.HmGetTransitionResponse
 	err = utils.RetryAlwaysWithContext(ha.ctx, utils.RetryCount, func() error {
 		var err2 error
 		status, err2 = bisecur.GetStatus(ha.localMac, ha.deviceMac, ha.host, ha.port, devicePort, ha.token)
 		if err2 != nil {
 			if err2.Error() == payload.GetErrorString(payload.ERROR_PERMISSION_DENIED) { // TODO don't like string comparisons so should be refactored somehow while relogin also should be make more generic (think of other commands)
-				ha.log.Infof("Got PERMISSION DENIED error when tried to get door status. Get a new token and try again.")
-				time.Sleep(3 * time.Second)
+				retryDelay := utils.CalculateBackoff(retryAttempt)
+				ha.log.Infof("Got PERMISSION DENIED error when tried to get door status. Get a new token and try again after %v sleep.", retryDelay)
+				time.Sleep(retryDelay)
+				retryAttempt = retryAttempt + 1
 				err3 := ha.forceReLogin()
 				if err3 != nil {
 					return fmt.Errorf("error while re-login after a PERMISSION DENIED error. %v. %v", err2, err3)

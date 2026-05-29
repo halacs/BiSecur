@@ -3,8 +3,31 @@ package utils
 import (
 	"context"
 	"halsecur/cli"
+	"math"
 	"time"
 )
+
+func CalculateBackoff(attempt int) time.Duration {
+	const (
+		base   = 3 * time.Second
+		max    = 3 * time.Hour
+		factor = 4.0
+	)
+	if attempt <= 0 {
+		return base
+	}
+
+	// Calculate the raw exponential backoff: base * (factor ^ attempt)
+	backoffFloat := float64(base) * math.Pow(factor, float64(attempt))
+	backoff := time.Duration(backoffFloat)
+
+	// Guard against overflow and cap at the maximum allowed duration
+	if backoffFloat > float64(max) || backoff < 0 {
+		backoff = max
+	}
+
+	return backoff
+}
 
 func RetryAlways(retryCount int, f func() error) error {
 	return Retry(context.Background(), retryCount, 0, f, func(err error) bool {
