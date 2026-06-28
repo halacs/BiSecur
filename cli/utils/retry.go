@@ -9,8 +9,8 @@ import (
 
 func CalculateBackoff(attempt int) time.Duration {
 	const (
-		base   = 3 * time.Second
-		max    = 3 * time.Hour
+		base   = 10 * time.Second
+		max    = 4 * time.Hour
 		factor = 4.0
 	)
 	if attempt <= 0 {

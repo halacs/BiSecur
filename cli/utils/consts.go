@@ -12,5 +12,5 @@ const (
 
 	HomeAssistantStatusTopic = "homeassistant/status"
 
-	RetryCount = 3
+	RetryCount = 10
 )

@@ -6,6 +6,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [v2.3.4]
+
+### Fixed
+- Further increasing backoff delays before retrying login
+
 ## [v2.3.3]
 
 ### Fixed
