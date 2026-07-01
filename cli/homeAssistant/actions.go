@@ -22,17 +22,40 @@ func isPermissionDenied(err error) bool {
 	return false
 }
 
-func (ha *HomeAssistanceMqttClient) autoLoginBisecur() error {
-	if ha.lastLoginTime.Add(bisecur.TokenExpirationTime).Before(time.Now()) {
-		if !ha.autoTokenRefresh {
-			ha.log.Debug("Token is potentially expired but auto login disabled so will not renew it. If you want to trigger a login and thus new token, zero token value in the config file or issue manual login in the command line interface.")
-			return nil
+// reloginOnPermissionDenied runs op and, when the gateway rejects it with PERMISSION_DENIED
+// (the session token has been idle-expired), re-authenticates and retries with an increasing
+// backoff, up to RetryCount times. It is shared by the impulse (SetState) and status
+// (GetTransition) paths so both self-heal identically, and replaces the old proactive
+// TokenExpirationTime timer. Honors --autologin: when auto re-login is disabled it runs op once
+// and returns whatever it gets, without renewing the token.
+func (ha *HomeAssistanceMqttClient) reloginOnPermissionDenied(label string, op func() error) error {
+	if !ha.autoTokenRefresh {
+		err := op()
+		if err != nil && isPermissionDenied(err) {
+			ha.log.Warnf("%s rejected with PERMISSION_DENIED but auto re-login is disabled by --autologin=false; not renewing the token.", label)
+		}
+		return err
+	}
+
+	attempt := 0
+	return utils.RetryAlwaysWithContext(ha.ctx, utils.RetryCount, func() error {
+		err := op()
+		if err == nil || !isPermissionDenied(err) {
+			return err
 		}
 
-		ha.log.Info("Token expired or removed. Logging in...")
-		return ha.forceReLogin()
-	}
-	return nil
+		// Stale session: the gateway idle-expires the token. Re-authenticate and retry,
+		// mirroring how the official app reacts to PERMISSION_DENIED (InfoCenter.onMCPError
+		// -> AppCache.relogin). Back off between attempts for a finicky gateway.
+		delay := utils.CalculateBackoff(attempt)
+		attempt++
+		ha.log.Infof("%s rejected with PERMISSION_DENIED; re-logging in and retrying after %v.", label, delay)
+		time.Sleep(delay)
+		if reErr := ha.forceReLogin(); reErr != nil {
+			return fmt.Errorf("re-login after PERMISSION_DENIED failed. %v. %v", err, reErr)
+		}
+		return err // still an error, so RetryAlways runs op again with the fresh token
+	})
 }
 
 func (ha *HomeAssistanceMqttClient) LogoutBisecur() error {
@@ -57,8 +80,7 @@ func (ha *HomeAssistanceMqttClient) forceReLogin() error {
 
 	// The gateway reliably kills the FIRST login that follows a stale session: it emits a LOGOUT
 	// frame for the previous session and resets the connection *before* replying to the login, so
-	// that attempt times out (this is the flakiness noted in the TokenExpirationTime TODO in
-	// cli/bisecur/consts.go). A fresh attempt then succeeds because the stale session is now gone.
+	// that attempt times out. A fresh attempt then succeeds because the stale session is now gone.
 	// The official app re-logs-in with no artificial delay (InfoCenter.onMCPError ->
 	// AppCache.relogin), so we keep the inter-attempt wait short and just retry.
 	const maxAttempts = 3
@@ -92,22 +114,9 @@ func (ha *HomeAssistanceMqttClient) setStateBisecurMultiCall(count int, devicePo
 	for i := 0; i < count; i++ {
 		ha.log.Debugf("Setting door state %d/%d", i+1, count)
 
-		err := ha.autoLoginBisecur()
-		if err != nil {
-			return fmt.Errorf("auto login failed. %v", err)
-		}
-
-		err = bisecur.SetState(ha.localMac, ha.deviceMac, ha.host, ha.port, devicePort, ha.token)
-		if err != nil && isPermissionDenied(err) {
-			// Stale session: the gateway idle-expires the token well before our
-			// proactive TokenExpirationTime elapses. Re-authenticate and retry once,
-			// mirroring how the official app reacts to PERMISSION_DENIED.
-			ha.log.Warnf("SetState rejected with PERMISSION_DENIED; session likely expired. Re-logging in and retrying.")
-			if reErr := ha.forceReLogin(); reErr != nil {
-				return fmt.Errorf("re-login after PERMISSION_DENIED failed. %v", reErr)
-			}
-			err = bisecur.SetState(ha.localMac, ha.deviceMac, ha.host, ha.port, devicePort, ha.token)
-		}
+		err := ha.reloginOnPermissionDenied("SetState", func() error {
+			return bisecur.SetState(ha.localMac, ha.deviceMac, ha.host, ha.port, devicePort, ha.token)
+		})
 		if err != nil {
 			return fmt.Errorf("failed to set door state. %v", err)
 		}
@@ -253,32 +262,12 @@ func (ha *HomeAssistanceMqttClient) getDoorStatus(devicePort byte) (direction st
 		direction = mockDoor.GetDirection()
 		return direction, position, nil
 	*/
-	err = ha.autoLoginBisecur()
-	if err != nil {
-		return utils.UNKNOWN, 0, fmt.Errorf("auto login failed. %v", err)
-	}
-
-	retryAttempt := 0
 	var status *payload.HmGetTransitionResponse
-	err = utils.RetryAlwaysWithContext(ha.ctx, utils.RetryCount, func() error {
+	err = ha.reloginOnPermissionDenied("GetStatus", func() error {
 		var err2 error
 		status, err2 = bisecur.GetStatus(ha.localMac, ha.deviceMac, ha.host, ha.port, devicePort, ha.token)
-		if err2 != nil {
-			if err2.Error() == payload.GetErrorString(payload.ERROR_PERMISSION_DENIED) { // TODO don't like string comparisons so should be refactored somehow while relogin also should be make more generic (think of other commands)
-				retryDelay := utils.CalculateBackoff(retryAttempt)
-				ha.log.Infof("Got PERMISSION DENIED error when tried to get door status. Get a new token and try again after %v sleep.", retryDelay)
-				time.Sleep(retryDelay)
-				retryAttempt = retryAttempt + 1
-				err3 := ha.forceReLogin()
-				if err3 != nil {
-					return fmt.Errorf("error while re-login after a PERMISSION DENIED error. %v. %v", err2, err3)
-				}
-			}
-		}
-
 		return err2
 	})
-
 	if err != nil {
 		return utils.UNKNOWN, 0, fmt.Errorf("failed to get door status. %v", err)
 	}
