@@ -12,7 +12,7 @@ import (
 )
 
 var portsInheritCmd = &cobra.Command{
-	Use:   "inherit",
+	Use:   InheritCmdUse,
 	Short: "Pair a new door by transmitting the gateway's radio code (INHERIT_PORT)",
 	Long: `Pair a new door by having the gateway transmit its own radio code.
 

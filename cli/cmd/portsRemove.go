@@ -15,9 +15,9 @@ func init() {
 	var devicePort int
 
 	portsRemoveCmd := &cobra.Command{
-		Use:   "remove",
-		Short: "Remove a paired port from the gateway",
-		Long:  `Remove a paired port (radio channel) from the gateway.`,
+		Use:     RemoveCmdUse,
+		Short:   "Remove a paired port from the gateway",
+		Long:    `Remove a paired port (radio channel) from the gateway.`,
 		PreRunE: preRunFuncs,
 		Run: func(cmd *cobra.Command, args []string) {
 			deviceMac := viper.GetString(ArgNameDeviceMac)
