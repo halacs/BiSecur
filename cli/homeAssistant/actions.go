@@ -1,6 +1,7 @@
 package homeAssistant
 
 import (
+	"errors"
 	"fmt"
 	"halsecur/cli"
 	"halsecur/cli/bisecur"
@@ -8,6 +9,18 @@ import (
 	"halsecur/sdk/payload"
 	"time"
 )
+
+// isPermissionDenied reports whether err (or any error it wraps) is a gateway
+// PERMISSION_DENIED response, which the gateway returns when the session token
+// has expired. The official Hörmann app reacts to this by logging out and
+// re-authenticating (HmProcessor.as); we do the same automatically.
+func isPermissionDenied(err error) bool {
+	var errResp *payload.ErrorResponse
+	if errors.As(err, &errResp) {
+		return errResp.GetErrorCode() == payload.ERROR_PERMISSION_DENIED
+	}
+	return false
+}
 
 func (ha *HomeAssistanceMqttClient) autoLoginBisecur() error {
 	if ha.lastLoginTime.Add(bisecur.TokenExpirationTime).Before(time.Now()) {
@@ -38,29 +51,34 @@ func (ha *HomeAssistanceMqttClient) LogoutBisecur() error {
 }
 
 func (ha *HomeAssistanceMqttClient) forceReLogin() error {
-	cli.Log.Infof("Logging in to the gateway...")
-
-	var err error
-
-	err = bisecur.Logout(ha.localMac, ha.deviceMac, ha.host, ha.port, ha.token)
-	if err != nil {
-		ha.log.Errorf("failed to logout. %v", err)
-	}
-	// clear token and the timestamp of the token after the successful logout
+	// Drop any cached token so we never reuse a dead session.
 	ha.token = 0
 	ha.lastLoginTime = time.UnixMicro(0)
 
-	// Not sure, this is really needed, but since I know Hormann BS gateway can become crazy if it gets overloaded...
-	time.Sleep(5 * time.Second)
+	// The gateway reliably kills the FIRST login that follows a stale session: it emits a LOGOUT
+	// frame for the previous session and resets the connection *before* replying to the login, so
+	// that attempt times out (this is the flakiness noted in the TokenExpirationTime TODO in
+	// cli/bisecur/consts.go). A fresh attempt then succeeds because the stale session is now gone.
+	// The official app re-logs-in with no artificial delay (InfoCenter.onMCPError ->
+	// AppCache.relogin), so we keep the inter-attempt wait short and just retry.
+	const maxAttempts = 3
+	const retryDelay = 2 * time.Second
 
-	ha.token, err = bisecur.Login(ha.localMac, ha.deviceMac, ha.host, ha.port, ha.deviceUsername, ha.devicePassword)
-	if err != nil {
-		return fmt.Errorf("login failed. %v", err)
+	var err error
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
+		cli.Log.Infof("Logging in to the gateway... (attempt %d/%d)", attempt, maxAttempts)
+		ha.token, err = bisecur.Login(ha.localMac, ha.deviceMac, ha.host, ha.port, ha.deviceUsername, ha.devicePassword)
+		if err == nil {
+			ha.lastLoginTime = time.Now() // note when token was received
+			return nil
+		}
+		ha.log.Warnf("login attempt %d/%d failed: %v", attempt, maxAttempts, err)
+		if attempt < maxAttempts {
+			time.Sleep(retryDelay)
+		}
 	}
 
-	ha.lastLoginTime = time.Now() // note when token was received
-
-	return nil
+	return fmt.Errorf("login failed after %d attempts. %v", maxAttempts, err)
 }
 
 func (ha *HomeAssistanceMqttClient) setStateMultiCall(count int, devicePort byte) error {
@@ -80,8 +98,18 @@ func (ha *HomeAssistanceMqttClient) setStateBisecurMultiCall(count int, devicePo
 		}
 
 		err = bisecur.SetState(ha.localMac, ha.deviceMac, ha.host, ha.port, devicePort, ha.token)
+		if err != nil && isPermissionDenied(err) {
+			// Stale session: the gateway idle-expires the token well before our
+			// proactive TokenExpirationTime elapses. Re-authenticate and retry once,
+			// mirroring how the official app reacts to PERMISSION_DENIED.
+			ha.log.Warnf("SetState rejected with PERMISSION_DENIED; session likely expired. Re-logging in and retrying.")
+			if reErr := ha.forceReLogin(); reErr != nil {
+				return fmt.Errorf("re-login after PERMISSION_DENIED failed. %v", reErr)
+			}
+			err = bisecur.SetState(ha.localMac, ha.deviceMac, ha.host, ha.port, devicePort, ha.token)
+		}
 		if err != nil {
-			return fmt.Errorf("failed to get door status. %v", err)
+			return fmt.Errorf("failed to set door state. %v", err)
 		}
 
 		if i < count-1 {

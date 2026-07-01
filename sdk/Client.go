@@ -421,6 +421,12 @@ func (c *Client) SetState(portID byte) error {
 		return fmt.Errorf("received unexpected packet: %s", response)
 	}
 
+	// The gateway acknowledges SetState with an ERROR frame (e.g. PERMISSION_DENIED
+	// when the session token has expired). Surface it instead of silently succeeding.
+	if err := isErrorResponse(response); err != nil {
+		return err
+	}
+
 	c.log.Debugf("Set State response: %s", response.String())
 
 	return nil
@@ -679,7 +685,9 @@ func castIfNotError[T payload.PayloadInterface](response *TransmissionContainer)
 func isErrorResponse(response *TransmissionContainer) error {
 	errorResponse, isErrorResponseType := response.Packet.payload.(*payload.ErrorResponse)
 	if isErrorResponseType {
-		return fmt.Errorf("%s", errorResponse.Error())
+		// Return the typed *payload.ErrorResponse (it implements error) so callers
+		// can inspect the gateway error code, e.g. to react to PERMISSION_DENIED.
+		return errorResponse
 	}
 	return nil
 }
