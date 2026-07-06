@@ -36,4 +36,7 @@ const (
 	ArgDoorStatusSupported         = "doorStatusSupported"
 	ArgDevicePortsName             = "devicePorts"
 	PortsCmdName                   = "ports"
+	AddCmdUse                      = "add"
+	InheritCmdUse                  = "inherit"
+	RemoveCmdUse                   = "remove"
 )
