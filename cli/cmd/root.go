@@ -47,7 +47,7 @@ func init() {
 	cli.Log = logger.NewLogger()
 
 	rootCmd.PersistentFlags().Uint32Var(&token, ArgNameToken, 0x0, "Valid authentication token")
-	rootCmd.PersistentFlags().Int64Var(&lastLoginTime, ArgNameTokenLastTime, 0x0, "Valid authentication token timestamp")
+	rootCmd.PersistentFlags().Int64Var(&lastLoginTime, ArgNameLastLoginTimeStamp, 0x0, "Valid authentication token timestamp")
 	rootCmd.PersistentFlags().StringVar(&username, ArgNameUsername, "", "Valid username")
 	rootCmd.PersistentFlags().StringVar(&password, ArgNamePassword, "", "Valid password belongs to the given username")
 	rootCmd.PersistentFlags().StringVar(&host, ArgNameHost, "", "IP or host name or the Hörmann BiSecure gateway")
