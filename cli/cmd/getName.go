@@ -13,7 +13,7 @@ import (
 
 func init() {
 	getNameCmd := &cobra.Command{
-		Use:     "get-name",
+		Use:     GetNameCmdName,
 		Short:   "Queries the name of the Hörmann BiSecur gateway",
 		Long:    ``,
 		PreRunE: preRunFuncs,

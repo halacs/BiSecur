@@ -5,7 +5,7 @@ import (
 )
 
 var usersCmd = &cobra.Command{
-	Use:     UsersCmdUse,
+	Use:     UsersCmdName,
 	Short:   "Manages users defined in your Hörmann BiSecur gateway.",
 	Long:    ``,
 	PreRunE: preRunFuncs,

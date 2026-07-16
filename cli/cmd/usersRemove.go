@@ -16,7 +16,7 @@ func init() {
 	)
 
 	usersDeleteCmd := &cobra.Command{
-		Use:     "remove",
+		Use:     UsersRemoveCmdName,
 		Short:   "Delete a gateway user",
 		Long:    `Delete a gateway user`,
 		PreRunE: preRunFuncs,

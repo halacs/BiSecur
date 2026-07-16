@@ -33,9 +33,9 @@ var portTypeNames = map[byte]string{
 }
 
 var portsListCmd = &cobra.Command{
-	Use:   "ports-list",
-	Short: "List all ports and their types on the gateway",
-	Long:  `List all configured ports on the gateway with their type (IMPULS, AUTO_CLOSE, etc).`,
+	Use:     PortsListCmdName,
+	Short:   "List all ports and their types on the gateway",
+	Long:    `List all configured ports on the gateway with their type (IMPULS, AUTO_CLOSE, etc).`,
 	PreRunE: preRunFuncs,
 	Run: func(cmd *cobra.Command, args []string) {
 		deviceMac := viper.GetString(ArgNameDeviceMac)

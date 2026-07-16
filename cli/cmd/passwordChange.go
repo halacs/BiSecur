@@ -17,7 +17,7 @@ func init() {
 	)
 
 	passwordChangeCmd := &cobra.Command{
-		Use:   "password-change",
+		Use:   PasswordChangeCmdName,
 		Short: "Change password of a gateway user",
 		Long:  `Change password of a gateway user`,
 		Run: func(cmd *cobra.Command, args []string) {

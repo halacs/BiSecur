@@ -1,9 +1,9 @@
 package cmd
 
 import (
+	"context"
 	"halsecur/cli"
 	"halsecur/sdk"
-	"context"
 	"os"
 	"time"
 
@@ -16,7 +16,7 @@ func init() {
 	)
 
 	discoverCmd := &cobra.Command{
-		Use:     "discover",
+		Use:     DiscoverCmdName,
 		Short:   "Discover Hörmann BiSecur gateways on the local network",
 		Long:    ``,
 		PreRunE: preRunFuncs,

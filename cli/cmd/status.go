@@ -15,7 +15,7 @@ func init() {
 	var devicePort int
 
 	statusCmd := &cobra.Command{
-		Use:     StatusCmdUse,
+		Use:     StatusCmdName,
 		Short:   "Queries the status (open/closed/etc) of your door.",
 		Long:    ``,
 		PreRunE: preRunFuncs,

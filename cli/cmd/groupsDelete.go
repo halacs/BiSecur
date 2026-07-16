@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"halsecur/cli"
+
 	"github.com/spf13/cobra"
 )
 
 var groupsDeleteCmd = &cobra.Command{
-	Use:     "delete",
+	Use:     DeleteCmdName,
 	Short:   "Delete a gateway group",
 	Long:    `Delete a gateway group`,
 	PreRunE: preRunFuncs,

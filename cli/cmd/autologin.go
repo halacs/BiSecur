@@ -9,7 +9,7 @@ import (
 )
 
 func loginRequired(name string) bool {
-	loginRequiredCommands := []string{StatusCmdUse, SetStateCmdUse, AddCmdUse, InheritCmdUse, RemoveCmdUse}
+	loginRequiredCommands := []string{StatusCmdName, SetStateCmdName, PortsAddCmdName, UsersAddCmdName, InheritCmdName, PortsRemoveCmdName, UsersRemoveCmdName}
 
 	for _, i := range loginRequiredCommands {
 		if name == i {

@@ -17,7 +17,7 @@ func init() {
 	)
 
 	usersCreateCmd := &cobra.Command{
-		Use:     "add",
+		Use:     UsersAddCmdName,
 		Short:   "Create a new gateway user",
 		Long:    `Create a new gateway user`,
 		PreRunE: preRunFuncs,

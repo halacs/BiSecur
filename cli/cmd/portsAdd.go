@@ -12,7 +12,7 @@ import (
 )
 
 var portsAddCmd = &cobra.Command{
-	Use:   AddCmdUse,
+	Use:   PortsAddCmdName,
 	Short: "Pair a new door by cloning a hand remote signal (ADD_PORT)",
 	Long: `Pair a new door by cloning a hand remote's radio signal.
 

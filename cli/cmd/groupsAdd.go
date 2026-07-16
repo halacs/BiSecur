@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"halsecur/cli"
+
 	"github.com/spf13/cobra"
 )
 
 var groupsCreateCmd = &cobra.Command{
-	Use:     "create",
+	Use:     GroupsAddCmdName,
 	Short:   "Create a new gateway group",
 	Long:    `Create a new gateway group`,
 	PreRunE: preRunFuncs,

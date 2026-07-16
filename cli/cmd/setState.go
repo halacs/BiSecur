@@ -15,7 +15,7 @@ func init() {
 	var devicePort int
 
 	setStateCmd := &cobra.Command{
-		Use:     SetStateCmdUse,
+		Use:     SetStateCmdName,
 		Short:   "Open or close a door connected to your Hörmann BiSecur gateway.",
 		Long:    ``,
 		PreRunE: preRunFuncs,
