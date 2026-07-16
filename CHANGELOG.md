@@ -6,6 +6,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [v2.4.0]
+
 ### Fixed
 - Re-login and retry on PERMISSION_DENIED instead of silently dropping impulses (#23)
 - Flag the port-management commands as login-required (#24)
