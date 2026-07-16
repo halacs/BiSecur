@@ -14,9 +14,6 @@ Hörmann officially supported this gateway version until end of 2023 / beginning
 
 ![gateway image](gateway.webp)
 
-### TODOs
-- [ ] Rework gateway access token handling: at least in HA integration, token should be renewed only when permission denied error received instead of timestamp/timeout based renewal (partially done already and stable if `autologin` is off)
-
 ## Usage
 ```
 $ ./halsecur 
@@ -48,6 +45,7 @@ Flags:
   -h, --help              help for halsecur
       --host string       IP or host name or the Hörmann BiSecure gateway
       --json              use json logging format instead of human readable
+      --lastLogin int     Valid authentication token timestamp
       --mac string        MAC address of the Hörmann BiSecur gateway
       --password string   Valid password belongs to the given username
       --port int           (default 4000)
