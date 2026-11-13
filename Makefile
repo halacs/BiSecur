@@ -58,16 +58,16 @@ build: env build-linux build-windows
 
 build-linux: env
 ifeq ($(OS),Windows_NT)
-	@set CGO_ENABLED=0&& @set GOARCH=amd64&& @set GOOS=linux&& go build -ldflags "$(LDFLAGS)" -v -o "$(DIST)/$(APPNAME)" .
+	@set CGO_ENABLED=0&& @set GOARCH=amd64&& @set GOOS=linux&& go build -trimpath -ldflags "$(LDFLAGS)" -v -o "$(DIST)/$(APPNAME)" .
 else
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags "$(LDFLAGS)" -v -o "$(DIST)/$(APPNAME)" .
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -trimpath -ldflags "$(LDFLAGS)" -v -o "$(DIST)/$(APPNAME)" .
 endif
 
 build-windows: env
 ifeq ($(OS),Windows_NT)
-	@set CGO_ENABLED=0&& @set GOARCH=amd64&& @set GOOS=windows&& go build -ldflags "$(LDFLAGS)" -v -o "$(DIST)/$(APPNAME).exe" .
+	@set CGO_ENABLED=0&& @set GOARCH=amd64&& @set GOOS=windows&& go build -trimpath -ldflags "$(LDFLAGS)" -v -o "$(DIST)/$(APPNAME).exe" .
 else
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=windows go build -ldflags "$(LDFLAGS)" -v -o "$(DIST)/$(APPNAME).exe" .
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=windows go build -trimpath -ldflags "$(LDFLAGS)" -v -o "$(DIST)/$(APPNAME).exe" .
 endif
 
 build-docker: env build
